@@ -23,6 +23,16 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("", "#")
         self._test_same("#", "#")
 
+    def test_num(self):
+        self._test_same("0", "0")
+        self._test_differ("0", "1",
+                          ((1, 0), (1, 0), "ast.Num.n differ 0 1"))
+
+    def test_str(self):
+        self._test_same("'a'", "'a'")
+        self._test_differ("'a'", "'b'",
+                          ((1, 0), (1, 0), "ast.Str.s differ a b"))
+
     def test_pass(self):
         self._test_same("pass", "pass")
 
