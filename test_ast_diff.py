@@ -28,6 +28,12 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("global a", "global b",
                           ((1, 0), (1, 0), "ast.Global.names differ"))
 
+    @unittest.skipUnless(ast_diff.py3, "ast.NonLocal is added in py3")
+    def test_nonlocal(self):
+        self._test_same("nonlocal a", "nonlocal a")
+        self._test_differ("nonlocal a", "nonlocal b",
+                          ((1, 0), (1, 0), "ast.Nonlocal.names differ"))
+
     def test_num(self):
         self._test_same("0", "0")
         self._test_differ("0", "1",

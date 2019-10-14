@@ -92,6 +92,9 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.Global):
                 if node1.names != node2.names:
                     raise DiffFound("ast.Global.names differ")
+            elif py3 and isinstance(node1, ast.Nonlocal):
+                if node1.names != node2.names:
+                    raise DiffFound("ast.Nonlocal.names differ")
             elif isinstance(node1, ast.Num):
                 if node1.n != node2.n:
                     raise DiffFound("ast.Num.n differ %s %s" % (node1.n, node2.n))
