@@ -290,6 +290,8 @@ def ast_diff(tree1, tree2):
                     raise DiffFound("ast.NameConstant.value differ %s %s" % (node1.value, node2.value))
             elif py3 and isinstance(node1, ast.withitem):
                 pass
+            elif py3 and isinstance(node1, ast.Ellipsis):
+                pass
             else:
                 if node1 != node2:
                     raise DiffFound("DEBUG: %s %s" % (node1, dir(node1)))

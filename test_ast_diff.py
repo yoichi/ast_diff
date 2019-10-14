@@ -606,6 +606,9 @@ class TestAstDiff(unittest.TestCase):
                           "def f():\n    yield from y",
                           ((2, 15), (2, 15), "ast.Name.id differ x y"))
 
+    @unittest.skipUnless(ast_diff.py3, "ellipsis is added in py3")
+    def test_ellipsis(self):
+        self._test_same("...", "...")
 
 if __name__ == '__main__':
     unittest.main()
