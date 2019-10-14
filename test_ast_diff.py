@@ -292,6 +292,13 @@ class TestAstDiff(unittest.TestCase):
                           "with a:\n    pass",
                           ((1, col), (1, col), "length of ast.With.body differ"))
 
+    def test_assert(self):
+        self._test_same("assert x", "assert x")
+        self._test_differ("assert x", "assert y",
+                          ((1, 7), (1, 7), "ast.Name.id differ x y"))
+        self._test_differ("assert x, m1", "assert x, m2",
+                          ((1, 10), (1, 10), "ast.Name.id differ m1 m2"))
+
     @unittest.skipIf(ast_diff.py3, "print expression not exists in py3")
     def test_print(self):
         self._test_same("print a", "print a")
