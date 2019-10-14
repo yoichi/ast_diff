@@ -95,6 +95,9 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.Str):
                 if node1.s != node2.s:
                     raise DiffFound("ast.Str.s differ %s %s" % (node1.s, node2.s))
+            elif py3 and isinstance(node1, ast.Bytes):
+                if node1.s != node2.s:
+                    raise DiffFound("ast.Bytes.s differ %s %s" % (node1.s, node2.s))
             elif isinstance(node1, ast.keyword):
                 pass
             elif isinstance(node1, ast.List):

@@ -33,6 +33,12 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("'a'", "'b'",
                           ((1, 0), (1, 0), "ast.Str.s differ a b"))
 
+    @unittest.skipUnless(ast_diff.py3, "ast.Bytes only exists in py3")
+    def test_bytes(self):
+        self._test_same("b'a'", "b'a'")
+        self._test_differ("b'a'", "b'b'",
+                          ((1, 0), (1, 0), "ast.Bytes.s differ b'a' b'b'"))
+
     def test_pass(self):
         self._test_same("pass", "pass")
 
