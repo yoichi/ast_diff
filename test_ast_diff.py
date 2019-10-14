@@ -574,6 +574,14 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("def f():\n    yield a", "def f():\n    yield",
                           ((2, 4), (2, 4), "ast.Yield.value differ"))
 
+    @unittest.skipUnless(ast_diff.py3, "yield from is added in py3")
+    def test_yieldfrom(self):
+        self._test_same("def f():\n    yield from x",
+                        "def f():\n    yield from x")
+        self._test_differ("def f():\n    yield from x",
+                          "def f():\n    yield from y",
+                          ((2, 15), (2, 15), "ast.Name.id differ x y"))
+
 
 if __name__ == '__main__':
     unittest.main()

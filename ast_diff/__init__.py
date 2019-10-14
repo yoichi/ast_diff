@@ -76,6 +76,8 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.Yield):
                 if (node1.value is None) != (node2.value is None):
                     raise DiffFound("ast.Yield.value differ")
+            elif py3 and isinstance(node1, ast.YieldFrom):
+                pass
             elif isinstance(node1, ast.BoolOp):
                 if node1.op != node2.op:
                     raise DiffFound("ast.BoolOp.op differ %s %s" % (type(node1.op), type(node2.op)))
