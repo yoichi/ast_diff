@@ -23,6 +23,11 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("", "#")
         self._test_same("#", "#")
 
+    def test_global(self):
+        self._test_same("global a", "global a")
+        self._test_differ("global a", "global b",
+                          ((1, 0), (1, 0), "ast.Global.names differ"))
+
     def test_num(self):
         self._test_same("0", "0")
         self._test_differ("0", "1",
