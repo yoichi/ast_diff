@@ -402,6 +402,30 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("lambda *, b=p: x", "lambda *, b=q: x",
                           ((1, 12), (1, 12), "ast.Name.id differ p q"))
 
+    @unittest.skipUnless(ast_diff.py3, "AsyncDef is added in py3")
+    def test_asyncdef(self):
+        self._test_same("async def f():\n    pass", "async def f():\n    pass")
+        self._test_same("@deco\nasync def a():\n    pass", "@deco\nasync def a():\n    pass")
+        self._test_differ("@deco\nasync def a():\n    pass", "async def a():\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncFunctionDef.decorator_list differ"))
+        self._test_differ("@deco1\nasync def a():\n    pass", "@deco2\nasync def a():\n    pass",
+                          ((1, 1), (1, 1), "ast.Name.id differ deco1 deco2"))
+        self._test_differ("async def a():\n    pass", "async def b():\n    pass",
+                          ((1, 0), (1, 0), "ast.AsyncFunctionDef.name differ a b"))
+        self._test_differ("async def a(x):\n    pass", "async def a():\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncFunctionDef.args.args differ"))
+        self._test_differ("async def a(x):\n    pass", "async def a(y):\n    pass",
+                          ((1, 12), (1, 12), "ast.arg.arg differ x y"))
+        self._test_differ("async def a(x):\n    pass", "async def a(x=z):\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncFunctionDef.args.defaults differ"))
+        self._test_differ("async def a(*x):\n    pass", "async def a():\n    pass",
+                          ((1, 0), (1, 0), "ast.AsyncFunctionDef.args.vararg differ"))
+        self._test_differ("async def a(**x):\n    pass", "async def a():\n    pass",
+                          ((1, 0), (1, 0), "ast.AsyncFunctionDef.args.kwarg differ"))
+        self._test_differ("async def a():\n    pass\n    pass",
+                          "async def a():\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncFunctionDef.body differ"))
+
     @unittest.skipUnless(ast_diff.py3, "typing support is added in py3")
     def test_typing(self):
         self._test_same("def a(b: s):\n    pass", "def a(b: s):\n    pass")

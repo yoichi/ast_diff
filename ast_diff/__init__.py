@@ -21,6 +21,36 @@ def _gen_diff(node_name, node1, node2):
             raise DiffFound("length of ast.comprehension.ifs differ")
 
 
+def _funcdef_diff(node_name, node1, node2):
+    if len(node1.decorator_list) != len(node2.decorator_list):
+        raise DiffFound("length of ast.%s.decorator_list differ" % node_name)
+    if node1.name != node2.name:
+        raise DiffFound("ast.%s.name differ %s %s" % (node_name, node1.name, node2.name))
+    if len(node1.body) != len(node2.body):
+        raise DiffFound("length of ast.%s.body differ" % node_name)
+    if py3 and (node1.returns is None) != (node2.returns is None):
+        raise DiffFound("ast.%s.returns differ" % node_name)
+    args1 = node1.args
+    args2 = node2.args
+    if len(args1.args) != len(args2.args):
+        raise DiffFound("length of ast.%s.args.args differ" % node_name)
+    if len(args1.defaults) != len(args2.defaults):
+        raise DiffFound("length of ast.%s.args.defaults differ" % node_name)
+    if py3:
+        if len(args1.kwonlyargs) != len(args2.kwonlyargs):
+            raise DiffFound("length of ast.%s.args.kwonlyargs differ" % node_name)
+        for i, (koa1, koa2) in enumerate(zip(args1.kwonlyargs, args2.kwonlyargs)):
+            if koa1.arg != koa2.arg:
+                raise DiffFound("ast.%s.args.kwonlyargs[%d].arg differ %s %s" % (node_name, i, koa1.arg, koa2.arg))
+        for kd1, kd2 in zip(args1.kw_defaults, args2.kw_defaults):
+            if (kd1 is None) != (kd2 is None):
+                raise DiffFound("ast.%s.args.kw_defaults differ" % node_name)
+    if (args1.vararg is None) != (args2.vararg is None):
+        raise DiffFound("ast.%s.args.vararg differ" % node_name)
+    if (args1.kwarg is None) != (args2.kwarg is None):
+        raise DiffFound("ast.%s.args.kwarg differ" % node_name)
+
+
 def ast_diff(tree1, tree2):
     for node1, node2 in zip_longest(ast.walk(tree1), ast.walk(tree2)):
         try:
@@ -149,33 +179,9 @@ def ast_diff(tree1, tree2):
                 if (args1.kwarg is None) != (args2.kwarg is None):
                     raise DiffFound("ast.Lambda.args.kwarg differ")
             elif isinstance(node1, ast.FunctionDef):
-                if len(node1.decorator_list) != len(node2.decorator_list):
-                    raise DiffFound("length of ast.FunctionDef.decorator_list differ")
-                if node1.name != node2.name:
-                    raise DiffFound("ast.FunctionDef.name differ %s %s" % (node1.name, node2.name))
-                if len(node1.body) != len(node2.body):
-                    raise DiffFound("length of ast.FunctionDef.body differ")
-                if py3 and (node1.returns is None) != (node2.returns is None):
-                    raise DiffFound("ast.FunctionDef.returns differ")
-                args1 = node1.args
-                args2 = node2.args
-                if len(args1.args) != len(args2.args):
-                    raise DiffFound("length of ast.FunctionDef.args.args differ")
-                if len(args1.defaults) != len(args2.defaults):
-                    raise DiffFound("length of ast.FunctionDef.args.defaults differ")
-                if py3:
-                    if len(args1.kwonlyargs) != len(args2.kwonlyargs):
-                        raise DiffFound("length of ast.FunctionDef.args.kwonlyargs differ")
-                    for i, (koa1, koa2) in enumerate(zip(args1.kwonlyargs, args2.kwonlyargs)):
-                        if koa1.arg != koa2.arg:
-                            raise DiffFound("ast.FunctionDef.args.kwonlyargs[%d].arg differ %s %s" % (i, koa1.arg, koa2.arg))
-                    for kd1, kd2 in zip(args1.kw_defaults, args2.kw_defaults):
-                        if (kd1 is None) != (kd2 is None):
-                            raise DiffFound("ast.FunctionDef.args.kw_defaults differ")
-                if (args1.vararg is None) != (args2.vararg is None):
-                    raise DiffFound("ast.FunctionDef.args.vararg differ")
-                if (args1.kwarg is None) != (args2.kwarg is None):
-                    raise DiffFound("ast.FunctionDef.args.kwarg differ")
+                _funcdef_diff("FunctionDef", node1, node2)
+            elif py3 and isinstance(node1, ast.AsyncFunctionDef):
+                _funcdef_diff("AsyncFunctionDef", node1, node2)
             elif isinstance(node1, ast.arguments):
                 pass
             elif py3 and isinstance(node1, ast.arg):
