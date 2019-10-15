@@ -174,6 +174,25 @@ class TestAstDiff(unittest.TestCase):
                           "for i in itr2:\n    pass",
                           ((1, 9), (1, 9), "ast.Name.id differ itr1 itr2"))
 
+    @unittest.skipUnless(ast_diff.py3, "AsyncFor is added in py3")
+    def test_asyncfor(self):
+        self._test_same("async for i in itr:\n    pass",
+                        "async for i in itr:\n    pass")
+        self._test_differ("async for i in itr:\n    pass\n    pass",
+                          "async for i in itr:\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncFor.body differ"))
+        self._test_same("async for i in itr:\n    pass\nelse:\n    pass",
+                        "async for i in itr:\n    pass\nelse:\n    pass")
+        self._test_differ("async for i in itr:\n    pass",
+                          "async for i in itr:\n    pass\nelse:\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncFor.orelse differ"))
+        self._test_differ("async for i in itr:\n    pass\nelse:\n    pass\n    pass",
+                          "async for i in itr:\n    pass\nelse:\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncFor.orelse differ"))
+        self._test_differ("async for i in itr1:\n    pass",
+                          "async for i in itr2:\n    pass",
+                          ((1, 15), (1, 15), "ast.Name.id differ itr1 itr2"))
+
     def test_operator(self):
         self._test_same("1 + 1", "1 + 1")
         self._test_differ("1 + 1", "1 - 1",

@@ -21,6 +21,13 @@ def _gen_diff(node_name, node1, node2):
             raise DiffFound("length of ast.comprehension.ifs differ")
 
 
+def _for_diff(node_name, node1, node2):
+    if len(node1.body) != len(node2.body):
+        raise DiffFound("length of ast.%s.body differ" % node_name)
+    elif len(node1.orelse) != len(node2.orelse):
+        raise DiffFound("length of ast.%s.orelse differ" % node_name)
+
+
 def _funcdef_diff(node_name, node1, node2):
     if len(node1.decorator_list) != len(node2.decorator_list):
         raise DiffFound("length of ast.%s.decorator_list differ" % node_name)
@@ -165,10 +172,9 @@ def ast_diff(tree1, tree2):
                 elif len(node1.orelse) != len(node2.orelse):
                     raise DiffFound("length of ast.While.orelse differ")
             elif isinstance(node1, ast.For):
-                if len(node1.body) != len(node2.body):
-                    raise DiffFound("length of ast.For.body differ")
-                elif len(node1.orelse) != len(node2.orelse):
-                    raise DiffFound("length of ast.For.orelse differ")
+                _for_diff("For", node1, node2)
+            elif py3 and isinstance(node1, ast.AsyncFor):
+                _for_diff("AsyncFor", node1, node2)
             elif isinstance(node1, ast.With):
                 _with_diff("With", node1, node2)
             elif py3 and isinstance(node1, ast.AsyncWith):
