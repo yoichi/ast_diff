@@ -51,6 +51,20 @@ def _funcdef_diff(node_name, node1, node2):
         raise DiffFound("ast.%s.args.kwarg differ" % node_name)
 
 
+def _with_diff(node_name, node1, node2):
+    if py3:
+        if len(node1.items) != len(node2.items):
+            raise DiffFound("length of ast.%s.items differ" % node_name)
+        for i, (item1, item2) in enumerate(zip(node1.items, node2.items)):
+            if (item1.optional_vars is None) != (item2.optional_vars is None):
+                raise DiffFound("ast.%s.items[%d].optional_vars differ" % (node_name, i))
+    else:
+        if (node1.optional_vars is None) != (node2.optional_vars is None):
+            raise DiffFound("ast.%s.optional_vars differ" % node_name)
+    if len(node1.body) != len(node2.body):
+        raise DiffFound("length of ast.%s.body differ" % node_name)
+
+
 def ast_diff(tree1, tree2):
     for node1, node2 in zip_longest(ast.walk(tree1), ast.walk(tree2)):
         try:
@@ -156,8 +170,9 @@ def ast_diff(tree1, tree2):
                 elif len(node1.orelse) != len(node2.orelse):
                     raise DiffFound("length of ast.For.orelse differ")
             elif isinstance(node1, ast.With):
-                if len(node1.body) != len(node2.body):
-                    raise DiffFound("length of ast.With.body differ")
+                _with_diff("With", node1, node2)
+            elif py3 and isinstance(node1, ast.AsyncWith):
+                _with_diff("AsyncWith", node1, node2)
             elif isinstance(node1, ast.Lambda):
                 args1 = node1.args
                 args2 = node2.args

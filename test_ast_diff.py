@@ -294,9 +294,42 @@ class TestAstDiff(unittest.TestCase):
         else:
             col = 5
         self._test_same("with a:\n    pass", "with a:\n    pass")
+        if ast_diff.py3:
+            self._test_differ("with a:\n    pass", "with a, b:\n    pass",
+                              ((1, 0), (1, 0), 'length of ast.With.items differ'))
+        else:
+            self._test_differ("with a:\n    pass", "with a, b:\n    pass",
+                              (((2, 4), (1, 8), "different type <class '_ast.Pass'> <class '_ast.With'>")))
+        self._test_same("with a as x:\n    pass", "with a as x:\n    pass")
+        if ast_diff.py3:
+            self._test_differ("with a as x:\n    pass", "with a:\n    pass",
+                              ((1, 0), (1, 0), 'ast.With.items[0].optional_vars differ'))
+        else:
+            self._test_differ("with a as x:\n    pass", "with a:\n    pass",
+                              ((1, 5), (1, 5), 'ast.With.optional_vars differ'))
+        self._test_differ("with a:\n    pass", "with b:\n    pass",
+                          ((1, 5), (1, 5), "ast.Name.id differ a b"))
+        self._test_differ("with a as x:\n    pass", "with a as y:\n    pass",
+                          ((1, 10), (1, 10), "ast.Name.id differ x y"))
         self._test_differ("with a:\n    pass\n    pass",
                           "with a:\n    pass",
                           ((1, col), (1, col), "length of ast.With.body differ"))
+
+    @unittest.skipUnless(ast_diff.py3, "AsyncWith is added in py3")
+    def test_asyncwith(self):
+        self._test_same("async with a:\n    pass", "async with a:\n    pass")
+        self._test_differ("async with a:\n    pass", "async with a, b:\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncWith.items differ"))
+        self._test_same("async with a as x:\n    pass", "async with a as x:\n    pass")
+        self._test_differ("async with a as x:\n    pass", "async with a:\n    pass",
+                          ((1, 0), (1, 0), 'ast.AsyncWith.items[0].optional_vars differ'))
+        self._test_differ("async with a:\n    pass", "async with b:\n    pass",
+                          ((1, 11), (1, 11), "ast.Name.id differ a b"))
+        self._test_differ("async with a as x:\n    pass", "async with a as y:\n    pass",
+                          ((1, 16), (1, 16), "ast.Name.id differ x y"))
+        self._test_differ("async with a:\n    pass\n    pass",
+                          "async with a:\n    pass",
+                          ((1, 0), (1, 0), "length of ast.AsyncWith.body differ"))
 
     def test_assert(self):
         self._test_same("assert x", "assert x")
