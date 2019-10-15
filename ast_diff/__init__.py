@@ -323,6 +323,8 @@ def ast_diff(tree1, tree2):
                 pass
             elif py3 and isinstance(node1, ast.Ellipsis):
                 pass
+            elif py3 and isinstance(node1, ast.Await):
+                pass
             else:
                 if node1 != node2:
                     raise DiffFound("DEBUG: %s %s" % (node1, dir(node1)))

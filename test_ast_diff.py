@@ -702,5 +702,12 @@ class TestAstDiff(unittest.TestCase):
     def test_ellipsis(self):
         self._test_same("...", "...")
 
+    @unittest.skipUnless(ast_diff.py3, "Await is added in py3")
+    def test_await(self):
+        self._test_same("await a", "await a")
+        self._test_differ("await a", "await b",
+                          ((1, 6), (1, 6), "ast.Name.id differ a b"))
+
+
 if __name__ == '__main__':
     unittest.main()
