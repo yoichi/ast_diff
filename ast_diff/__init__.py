@@ -282,8 +282,12 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.ExceptHandler):
                 if (node1.type is None) != (node2.type is None):
                     raise DiffFound("ast.ExceptHandler.type differ")
-                if (node1.name is None) != (node2.name is None):
-                    raise DiffFound("ast.ExceptHandler.name differ")
+                if py3:
+                    if node1.name != node2.name:
+                        raise DiffFound("ast.ExceptHandler.name differ")
+                else:
+                    if (node1.name is None) != (node2.name is None):
+                        raise DiffFound("ast.ExceptHandler.name differ")
                 if len(node1.body) != len(node2.body):
                     raise DiffFound("length of ast.ExceptHandler.body differ")
             elif isinstance(node1, ast.Assert):

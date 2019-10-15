@@ -549,6 +549,8 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("try:\n    pass\n    pass\nexcept:\n    pass",
                           "try:\n    pass\nexcept:\n    pass",
                           ((1, 0), (1, 0), "length of ast.Try.body differ"))
+        self._test_same("try:\n    pass\nexcept a:\n    pass",
+                        "try:\n    pass\nexcept a:\n    pass")
         self._test_differ("try:\n    pass\nexcept a:\n    pass\nexcept b:\n    pass",
                           "try:\n    pass\nexcept a:\n    pass",
                           ((1, 0), (1, 0), "length of ast.Try.handlers differ"))
@@ -558,8 +560,13 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("try:\n    pass\nexcept a:\n    pass",
                           "try:\n    pass\nexcept:\n    pass",
                           ((3, 0), (3, 0), "ast.ExceptHandler.type differ"))
+        self._test_same("try:\n    pass\nexcept a as x:\n    pass",
+                        "try:\n    pass\nexcept a as x:\n    pass")
         self._test_differ("try:\n    pass\nexcept a as x:\n    pass",
                           "try:\n    pass\nexcept a:\n    pass",
+                          ((3, 0), (3, 0), "ast.ExceptHandler.name differ"))
+        self._test_differ("try:\n    pass\nexcept a as x:\n    pass",
+                          "try:\n    pass\nexcept a as y:\n    pass",
                           ((3, 0), (3, 0), "ast.ExceptHandler.name differ"))
         self._test_differ("try:\n    pass\nexcept:\n    pass\n    pass",
                           "try:\n    pass\nexcept:\n    pass",
@@ -582,6 +589,8 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("try:\n    pass\n    pass\nexcept:\n    pass",
                           "try:\n    pass\nexcept:\n    pass",
                           ((1, 0), (1, 0), "length of ast.TryExcept.body differ"))
+        self._test_same("try:\n    pass\nexcept a:\n    pass",
+                        "try:\n    pass\nexcept a:\n    pass")
         self._test_differ("try:\n    pass\nexcept a:\n    pass\nexcept b:\n    pass",
                           "try:\n    pass\nexcept a:\n    pass",
                           ((1, 0), (1, 0), "length of ast.TryExcept.handlers differ"))
@@ -591,9 +600,16 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("try:\n    pass\nexcept a:\n    pass",
                           "try:\n    pass\nexcept:\n    pass",
                           ((3, 0), (3, 0), "ast.ExceptHandler.type differ"))
+        self._test_same("try:\n    pass\nexcept a as x:\n    pass",
+                        "try:\n    pass\nexcept a as x:\n    pass")
+        self._test_same("try:\n    pass\nexcept a as x:\n    pass",
+                        "try:\n    pass\nexcept a, x:\n    pass")
         self._test_differ("try:\n    pass\nexcept a as x:\n    pass",
                           "try:\n    pass\nexcept a:\n    pass",
                           ((3, 0), (3, 0), "ast.ExceptHandler.name differ"))
+        self._test_differ("try:\n    pass\nexcept a as x:\n    pass",
+                          "try:\n    pass\nexcept a as y:\n    pass",
+                          ((3, 12), (3, 12), "ast.Name.id differ x y"))
         self._test_differ("try:\n    pass\nexcept:\n    pass\n    pass",
                           "try:\n    pass\nexcept:\n    pass",
                           ((3, 0), (3, 0), "length of ast.ExceptHandler.body differ"))
