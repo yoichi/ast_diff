@@ -88,6 +88,8 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.AugAssign):
                 if node1.op != node2.op:
                     raise DiffFound("ast.AugAssign.op differ %s %s" % (type(node1.op), type(node2.op)))
+            elif py3 and isinstance(node1, ast.AnnAssign):
+                pass
             elif isinstance(node1, ast.Pass):
                 pass
             elif isinstance(node1, ast.Call):

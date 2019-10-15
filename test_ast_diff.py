@@ -86,6 +86,14 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("a += 1", "a += 1")
         self._test_differ("a += 1", "a -= 1", ((1, 0), (1, 0), "ast.AugAssign.op differ <class '_ast.Add'> <class '_ast.Sub'>"))
 
+    @unittest.skipUnless(ast_diff.py3, "AnnAssign is added in py3")
+    def test_annassign(self):
+        self._test_same("a: x", "a: x")
+        self._test_differ("a: x", "b: x",
+                          ((1, 0), (1, 0), "ast.Name.id differ a b"))
+        self._test_differ("a: x", "a: y",
+                          ((1, 3), (1, 3), "ast.Name.id differ x y"))
+
     def test_call(self):
         self._test_same("int()", "int()")
         self._test_same("int(1)", "int(1)")
