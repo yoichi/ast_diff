@@ -400,6 +400,12 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("exec 'a' in {}, {}", "exec 'a' in {}",
                           ((1, 0), (1, 0), "ast.Exec.locals differ"))
 
+    @unittest.skipIf(ast_diff.py3, "Repr is removed in py3")
+    def test_repr(self):
+        self._test_same("`x`", "`x`")
+        self._test_differ("`x`", "`y`",
+                          ((1, 1), (1, 1), "ast.Name.id differ x y"))
+
     def test_in(self):
         self._test_same("a in x", "a in x")
         self._test_differ("a in x", "b in x",
