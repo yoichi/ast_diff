@@ -383,12 +383,22 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("assert x, m1", "assert x, m2",
                           ((1, 10), (1, 10), "ast.Name.id differ m1 m2"))
 
-    @unittest.skipIf(ast_diff.py3, "print expression not exists in py3")
+    @unittest.skipIf(ast_diff.py3, "Print is removed in py3")
     def test_print(self):
         self._test_same("print a", "print a")
         self._test_same("print a,b", "print a,b")
         self._test_differ("print a", "print b",
                           ((1, 6), (1, 6), "ast.Name.id differ a b"))
+
+    @unittest.skipIf(ast_diff.py3, "Exec is removed in py3")
+    def test_exec(self):
+        self._test_same("exec 'a'", "exec 'a'")
+        self._test_differ("exec 'a'", "exec 'b'",
+                          ((1, 5), (1, 5), "ast.Str.s differ a b"))
+        self._test_differ("exec 'a' in {}", "exec 'a'",
+                          ((1, 0), (1, 0), "ast.Exec.globals differ"))
+        self._test_differ("exec 'a' in {}, {}", "exec 'a' in {}",
+                          ((1, 0), (1, 0), "ast.Exec.locals differ"))
 
     def test_in(self):
         self._test_same("a in x", "a in x")

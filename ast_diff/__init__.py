@@ -326,6 +326,12 @@ def ast_diff(tree1, tree2):
             elif not py3 and isinstance(node1, ast.Print):
                 if len(node1.values) != len(node2.values):
                     raise DiffFound("length of ast.Print.values differ")
+            elif not py3 and isinstance(node1, ast.Exec):
+                if (node1.globals is None) != (node2.globals is None):
+                    raise DiffFound("ast.Exec.globals differ")
+                if (node1.locals is None) != (node2.locals is None):
+                    raise DiffFound("ast.Exec.locals differ")
+                pass
             elif py3 and isinstance(node1, ast.NameConstant):
                 if node1.value != node2.value:
                     raise DiffFound("ast.NameConstant.value differ %s %s" % (node1.value, node2.value))
