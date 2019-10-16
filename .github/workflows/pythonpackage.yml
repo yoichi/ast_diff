@@ -17,9 +17,9 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Lint with flake8
-      run: |
-        python setup.py flake8
     - name: Run test
       run: |
         python setup.py test
+    - name: Lint with flake8
+      run: |
+        python setup.py flake8
