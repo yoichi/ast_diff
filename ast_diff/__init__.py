@@ -154,6 +154,14 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.Str):
                 if node1.s != node2.s:
                     raise DiffFound("ast.Str.s differ %s %s" % (node1.s, node2.s))
+            elif py3 and isinstance(node1, ast.JoinedStr):
+                if len(node1.values) != len(node2.values):
+                    raise DiffFound("length of ast.JoinedStr.values differ")
+            elif py3 and isinstance(node1, ast.FormattedValue):
+                if node1.conversion != node2.conversion:
+                    raise DiffFound("ast.FormattedValue.conversion differ")
+                if (node1.format_spec is None) != (node2.format_spec is None):
+                    raise DiffFound("ast.FormattedValue.format_spec differ")
             elif py3 and isinstance(node1, ast.Bytes):
                 if node1.s != node2.s:
                     raise DiffFound("ast.Bytes.s differ %s %s" % (node1.s, node2.s))

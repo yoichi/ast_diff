@@ -44,6 +44,24 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("'a'", "'b'",
                           ((1, 0), (1, 0), "ast.Str.s differ a b"))
 
+    @unittest.skipUnless(ast_diff.py3, "ast.JoinedStr only exists in py3")
+    def test_joinedstr(self):
+        self._test_same("f'{a}'", "f'{a}'")
+        self._test_differ("f'{3.14:10.10}'", "f'{3.14}'",
+                          ((1, 0), (1, 0), "ast.FormattedValue.format_spec differ"))
+        self._test_differ("f'{3.14!r:10.10}'", "f'{3.14!a:10.10}'",
+                          ((1, 0), (1, 0), "ast.FormattedValue.conversion differ"))
+        self._test_differ("'{a}'", "f'{a}'",
+                          ((1, 0), (1, 0), "different type <class '_ast.Str'> <class '_ast.JoinedStr'>"))
+        self._test_differ("f'_{a}'", "f'{a}'",
+                          ((1, 0), (1, 0), "length of ast.JoinedStr.values differ"))
+        self._test_differ("f'{a}_'", "f'{a}'",
+                          ((1, 0), (1, 0), "length of ast.JoinedStr.values differ"))
+        self._test_differ("f'{a}'", "f'{a}{b}'",
+                          ((1, 0), (1, 0), "length of ast.JoinedStr.values differ"))
+        self._test_differ("f'{a}'", "f'{b}'",
+                          ((1, 3), (1, 3), 'ast.Name.id differ a b'))
+
     @unittest.skipUnless(ast_diff.py3, "ast.Bytes only exists in py3")
     def test_bytes(self):
         self._test_same("b'a'", "b'a'")
