@@ -48,7 +48,8 @@ def _funcdef_diff(node_name, node1, node2):
             raise DiffFound("length of ast.%s.args.kwonlyargs differ" % node_name)
         for i, (koa1, koa2) in enumerate(zip(args1.kwonlyargs, args2.kwonlyargs)):
             if koa1.arg != koa2.arg:
-                raise DiffFound("ast.%s.args.kwonlyargs[%d].arg differ %s %s" % (node_name, i, koa1.arg, koa2.arg))
+                raise DiffFound("ast.%s.args.kwonlyargs[%d].arg differ %s %s" %
+                                (node_name, i, koa1.arg, koa2.arg))
         for kd1, kd2 in zip(args1.kw_defaults, args2.kw_defaults):
             if (kd1 is None) != (kd2 is None):
                 raise DiffFound("ast.%s.args.kw_defaults differ" % node_name)
@@ -87,7 +88,8 @@ def ast_diff(tree1, tree2):
                 pass
             elif isinstance(node1, ast.AugAssign):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.AugAssign.op differ %s %s" % (type(node1.op), type(node2.op)))
+                    raise DiffFound("ast.AugAssign.op differ %s %s" %
+                                    (type(node1.op), type(node2.op)))
             elif py3 and isinstance(node1, ast.AnnAssign):
                 pass
             elif isinstance(node1, ast.Pass):
@@ -133,7 +135,8 @@ def ast_diff(tree1, tree2):
                 pass
             elif isinstance(node1, ast.BoolOp):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.BoolOp.op differ %s %s" % (type(node1.op), type(node2.op)))
+                    raise DiffFound("ast.BoolOp.op differ %s %s" %
+                                    (type(node1.op), type(node2.op)))
             elif isinstance(node1, ast.Compare):
                 if len(node1.comparators) != len(node2.comparators):
                     raise DiffFound("length of ast.Compare.comparators differ")
@@ -201,7 +204,8 @@ def ast_diff(tree1, tree2):
                         raise DiffFound("length of ast.Lambda.args.kwonlyargs differ")
                     for i, (koa1, koa2) in enumerate(zip(args1.kwonlyargs, args2.kwonlyargs)):
                         if koa1.arg != koa2.arg:
-                            raise DiffFound("ast.Lambda.args.kwonlyargs[%d].arg differ %s %s" % (i, koa1.arg, koa2.arg))
+                            raise DiffFound("ast.Lambda.args.kwonlyargs[%d].arg differ %s %s" %
+                                            (i, koa1.arg, koa2.arg))
                     for kd1, kd2 in zip(args1.kw_defaults, args2.kw_defaults):
                         if (kd1 is None) != (kd2 is None):
                             raise DiffFound("ast.Lambda.args.kw_defaults differ")
@@ -222,7 +226,8 @@ def ast_diff(tree1, tree2):
                     raise DiffFound("ast.arg.annotation differ")
             elif isinstance(node1, ast.UnaryOp):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.UnaryOp.op differ %s %s" % (type(node1.op), type(node2.op)))
+                    raise DiffFound("ast.UnaryOp.op differ %s %s" %
+                                    (type(node1.op), type(node2.op)))
             elif isinstance(node1, ast.BinOp):
                 if node1.op != node2.op:
                     raise DiffFound("ast.BinOp.op differ %s %s" % (type(node1.op), type(node2.op)))
@@ -232,7 +237,8 @@ def ast_diff(tree1, tree2):
                 slice1 = node1.slice
                 slice2 = node2.slice
                 if type(slice1) != type(slice2):
-                    raise DiffFound("type of ast.Subscript.slice differ %s %s" % (type(slice1), type(slice2)))
+                    raise DiffFound("type of ast.Subscript.slice differ %s %s" %
+                                    (type(slice1), type(slice2)))
                 if isinstance(slice1, ast.Slice):
                     if (slice1.lower is None) != (slice2.lower is None):
                         raise DiffFound("ast.Subscript.slice.lower differ")
@@ -251,17 +257,20 @@ def ast_diff(tree1, tree2):
                     if name1.name != name2.name:
                         raise DiffFound("ast.alias.name differ %s %s" % (name1.name, name2.name))
                     if name1.asname != name2.asname:
-                        raise DiffFound("ast.alias.asname differ %s %s" % (name1.asname, name2.asname))
+                        raise DiffFound("ast.alias.asname differ %s %s" %
+                                        (name1.asname, name2.asname))
             elif isinstance(node1, ast.ImportFrom):
                 if node1.module != node2.module:
-                    raise DiffFound("ast.ImportFrom.module differ %s %s" % (node1.module, node2.module))
+                    raise DiffFound("ast.ImportFrom.module differ %s %s" %
+                                    (node1.module, node2.module))
                 if len(node1.names) != len(node2.names):
                     raise DiffFound("length of ast.ImportFrom.names differ")
                 for name1, name2 in zip(node1.names, node2.names):
                     if name1.name != name2.name:
                         raise DiffFound("ast.alias.name differ %s %s" % (name1.name, name2.name))
                     if name1.asname != name2.asname:
-                        raise DiffFound("ast.alias.asname differ %s %s" % (name1.asname, name2.asname))
+                        raise DiffFound("ast.alias.asname differ %s %s" %
+                                        (name1.asname, name2.asname))
             elif isinstance(node1, ast.alias):
                 pass
             elif isinstance(node1, ast.Attribute):
@@ -335,7 +344,8 @@ def ast_diff(tree1, tree2):
                 pass
             elif py3 and isinstance(node1, ast.NameConstant):
                 if node1.value != node2.value:
-                    raise DiffFound("ast.NameConstant.value differ %s %s" % (node1.value, node2.value))
+                    raise DiffFound("ast.NameConstant.value differ %s %s" %
+                                    (node1.value, node2.value))
             elif py3 and isinstance(node1, ast.withitem):
                 pass
             elif py3 and isinstance(node1, ast.Ellipsis):
