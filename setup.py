@@ -6,6 +6,11 @@ setuptools.setup(
     author='Yoichi Nakayama',
     author_email='yoichi.nakayama@gmail.com',
     packages=setuptools.find_packages(),
+    entry_points={
+        'console_scripts': [
+            'astdiff = ast_diff:main',
+        ],
+    },
     setup_requires=[
         'flake8',
     ],

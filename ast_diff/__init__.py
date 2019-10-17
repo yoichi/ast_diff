@@ -366,7 +366,7 @@ def ast_diff(tree1, tree2):
     return None
 
 
-if __name__ == '__main__':
+def main():
     def load(fname):
         with open(fname) as f:
             return ast.parse(f.read())
@@ -379,3 +379,7 @@ if __name__ == '__main__':
     result = ast_diff(load(fname1), load(fname2))
     print(result)
     sys.exit(result is not None)
+
+
+if __name__ == '__main__':
+    main()
