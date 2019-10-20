@@ -35,14 +35,22 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 0), (1, 0), "ast.Nonlocal.names differ"))
 
     def test_num(self):
+        if ast_diff.py38:
+            num_value = "ast.Constant.value"
+        else:
+            num_value = "ast.Num.n"
         self._test_same("0", "0")
         self._test_differ("0", "1",
-                          ((1, 0), (1, 0), "ast.Num.n differ 0 1"))
+                          ((1, 0), (1, 0), "%s differ 0 1" % num_value))
 
     def test_str(self):
+        if ast_diff.py38:
+            str_value = "ast.Constant.value"
+        else:
+            str_value = "ast.Str.s"
         self._test_same("'a'", "'a'")
         self._test_differ("'a'", "'b'",
-                          ((1, 0), (1, 0), "ast.Str.s differ a b"))
+                          ((1, 0), (1, 0), "%s differ a b" % str_value))
 
     @unittest.skipUnless(ast_diff.py3, "ast.JoinedStr is added in py3")
     def test_joinedstr(self):
@@ -51,8 +59,12 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 0), (1, 0), "ast.FormattedValue.format_spec differ"))
         self._test_differ("f'{3.14!r:10.10}'", "f'{3.14!a:10.10}'",
                           ((1, 0), (1, 0), "ast.FormattedValue.conversion differ"))
-        self._test_differ("'{a}'", "f'{a}'",
-                          ((1, 0), (1, 0), "different type <class '_ast.Str'> <class '_ast.JoinedStr'>"))
+        if ast_diff.py38:
+            self._test_differ("'{a}'", "f'{a}'",
+                              ((1, 0), (1, 0), "different type <class '_ast.Constant'> <class '_ast.JoinedStr'>"))
+        else:
+            self._test_differ("'{a}'", "f'{a}'",
+                              ((1, 0), (1, 0), "different type <class '_ast.Str'> <class '_ast.JoinedStr'>"))
         self._test_differ("f'_{a}'", "f'{a}'",
                           ((1, 0), (1, 0), "length of ast.JoinedStr.values differ"))
         self._test_differ("f'{a}_'", "f'{a}'",
@@ -60,22 +72,34 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("f'{a}'", "f'{a}{b}'",
                           ((1, 0), (1, 0), "length of ast.JoinedStr.values differ"))
         self._test_differ("f'{a}'", "f'{b}'",
-                          ((1, 3), (1, 3), 'ast.Name.id differ a b'))
+                          ((1, 3), (1, 3), "ast.Name.id differ a b"))
+        if ast_diff.py38:
+            self._test_same("f'{a=}'", "f'{a=}'")
+            self._test_differ("f'{a=}'", "f'{b=}'",
+                              ((1, 0), (1, 0), "ast.Constant.value differ a= b="))
 
     @unittest.skipUnless(ast_diff.py3, "ast.Bytes is added in py3")
     def test_bytes(self):
+        if ast_diff.py38:
+            bytes_value = "ast.Constant.value"
+        else:
+            bytes_value = "ast.Bytes.s"
         self._test_same("b'a'", "b'a'")
         self._test_differ("b'a'", "b'b'",
-                          ((1, 0), (1, 0), "ast.Bytes.s differ b'a' b'b'"))
+                          ((1, 0), (1, 0), "%s differ b'a' b'b'" % bytes_value))
 
     def test_pass(self):
         self._test_same("pass", "pass")
 
     @unittest.skipUnless(ast_diff.py3, "ast.NameConst is added in py3")
     def test_nameconst(self):
+        if ast_diff.py38:
+            value = "ast.Constant.value"
+        else:
+            value = "ast.NameConstant.value"
         self._test_same("True", "True")
         self._test_differ("True", "False",
-                          ((1, 0), (1, 0), "ast.NameConstant.value differ True False"))
+                          ((1, 0), (1, 0), "%s differ True False" % value))
 
     def test_module(self):
         self._test_same("pass", "pass")
@@ -89,18 +113,30 @@ class TestAstDiff(unittest.TestCase):
                           (None, (2, 0), "different type %s <class '_ast.Pass'>" % none_type))
 
     def test_expression(self):
+        if ast_diff.py38:
+            str_value = num_value = "ast.Constant.value"
+        else:
+            str_value = "ast.Str.s"
+            num_value = "ast.Num.n"
         self._test_same("1", "1")
-        self._test_differ("1", "2", ((1, 0), (1, 0), "ast.Num.n differ 1 2"))
+        self._test_differ("1", "2", ((1, 0), (1, 0), "%s differ 1 2" % num_value))
         self._test_same("'s'", "'s'")
         self._test_same("'s'", '"s"')
         self._test_same("'s'", '"""s"""')
-        self._test_differ("'s'", "'t'", ((1, 0), (1, 0), "ast.Str.s differ s t"))
-        self._test_differ("1", "'s'", ((1, 0), (1, 0), "different type <class '_ast.Num'> <class '_ast.Str'>"))
+        self._test_differ("'s'", "'t'", ((1, 0), (1, 0), "%s differ s t" % str_value))
+        if ast_diff.py38:
+            self._test_differ("1", "'s'", ((1, 0), (1, 0), "ast.Constant.value differ 1 s"))
+        else:
+            self._test_differ("1", "'s'", ((1, 0), (1, 0), "different type <class '_ast.Num'> <class '_ast.Str'>"))
 
     def test_assign(self):
+        if ast_diff.py38:
+            num_value = "ast.Constant.value"
+        else:
+            num_value = "ast.Num.n"
         self._test_same("a = 1", "a = 1")
         self._test_differ("a = 1", "b = 1", ((1, 0), (1, 0), "ast.Name.id differ a b"))
-        self._test_differ("a = 1", "a = 2", ((1, 4), (1, 4), "ast.Num.n differ 1 2"))
+        self._test_differ("a = 1", "a = 2", ((1, 4), (1, 4), "%s differ 1 2" % num_value))
         self._test_same("a += 1", "a += 1")
         self._test_differ("a += 1", "a -= 1", ((1, 0), (1, 0), "ast.AugAssign.op differ <class '_ast.Add'> <class '_ast.Sub'>"))
 
@@ -127,6 +163,10 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("func(a=1)", "func(b=1)", ((1, 0), (1, 0), "ast.Call.keywords differ"))
 
     def test_compare(self):
+        if ast_diff.py38:
+            num_value = "ast.Constant.value"
+        else:
+            num_value = "ast.Num.n"
         self._test_same("1 == 1", "1 == 1")
         self._test_same("1 != 1", "1 != 1")
         self._test_same("1 > 1", "1 > 1")
@@ -134,8 +174,8 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("1 >= 1", "1 >= 1")
         self._test_same("1 <= 1", "1 <= 1")
         self._test_differ("1 == 1", "1 != 1", ((1, 0), (1, 0), "ast.Compare.ops differ"))
-        self._test_differ("1 == 1", "2 == 1", ((1, 0), (1, 0), "ast.Num.n differ 1 2"))
-        self._test_differ("1 == 1", "1 == 2", ((1, 5), (1, 5), "ast.Num.n differ 1 2"))
+        self._test_differ("1 == 1", "2 == 1", ((1, 0), (1, 0), "%s differ 1 2" % num_value))
+        self._test_differ("1 == 1", "1 == 2", ((1, 5), (1, 5), "%s differ 1 2" % num_value))
 
     def test_if(self):
         self._test_same("if t:\n    pass",
@@ -230,22 +270,35 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 0), (1, 0), "ast.BoolOp.op differ <class '_ast.And'> <class '_ast.Or'>"))
 
     def test_subscript(self):
+        if ast_diff.py38:
+            str_value = num_value = "ast.Constant.value"
+        else:
+            str_value = "ast.Str.s"
+            num_value = "ast.Num.n"
         self._test_same("a[0]", "a[0]")
         self._test_differ("a[0]", "b[0]", ((1, 0), (1, 0), "ast.Name.id differ a b"))
-        self._test_differ("a[0]", "a[1]", ((1, 2), (1, 2), "ast.Num.n differ 0 1"))
+        self._test_differ("a[0]", "a[1]", ((1, 2), (1, 2), "%s differ 0 1" % num_value))
         self._test_differ("a[0]", "a[:]", ((1, 0), (1, 0), "type of ast.Subscript.slice differ <class '_ast.Index'> <class '_ast.Slice'>"))
         self._test_same("a[:]", "a[:]")
         self._test_differ("a[:]", "a[0:]", ((1, 0), (1, 0), "ast.Subscript.slice.lower differ"))
         self._test_differ("a[:]", "a[:0]", ((1, 0), (1, 0), "ast.Subscript.slice.upper differ"))
         self._test_differ("a[:]", "a[::1]", ((1, 0), (1, 0), "ast.Subscript.slice.step differ"))
         self._test_same("a['x']", "a['x']")
-        self._test_differ("a['x']", "a['y']", ((1, 2), (1, 2), "ast.Str.s differ x y"))
-        self._test_differ("a[0]", "a['x']",
-                          ((1, 2), (1, 2), "different type <class '_ast.Num'> <class '_ast.Str'>"))
+        self._test_differ("a['x']", "a['y']", ((1, 2), (1, 2), "%s differ x y" % str_value))
+        if ast_diff.py38:
+            self._test_differ("a[0]", "a['x']",
+                              ((1, 2), (1, 2), "ast.Constant.value differ 0 x"))
+        else:
+            self._test_differ("a[0]", "a['x']",
+                              ((1, 2), (1, 2), "different type <class '_ast.Num'> <class '_ast.Str'>"))
         self._test_same("a[x]", "a[x]")
         self._test_differ("a[x]", "a[y]", ((1, 2), (1, 2), "ast.Name.id differ x y"))
-        self._test_differ("a[0]", "a[x]",
-                          ((1, 2), (1, 2), "different type <class '_ast.Num'> <class '_ast.Name'>"))
+        if ast_diff.py38:
+            self._test_differ("a[0]", "a[x]",
+                              ((1, 2), (1, 2), "different type <class '_ast.Constant'> <class '_ast.Name'>"))
+        else:
+            self._test_differ("a[0]", "a[x]",
+                              ((1, 2), (1, 2), "different type <class '_ast.Num'> <class '_ast.Name'>"))
 
     def test_delete(self):
         self._test_same("del a[0]", "del a[0]")
@@ -300,8 +353,12 @@ class TestAstDiff(unittest.TestCase):
 
     def test_tuple(self):
         self._test_same("()", "()")
+        if ast_diff.py38:
+            col = 0
+        else:
+            col = 1
         self._test_differ("()", "(a,)",
-                          ((1, 0), (1, 1), "length of ast.Tuple.elts differ"))
+                          ((1, 0), (1, col), "length of ast.Tuple.elts differ"))
         self._test_differ("(a,)", "(b,)",
                           ((1, 1), (1, 1), "ast.Name.id differ a b"))
 
@@ -309,10 +366,10 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("raise", "raise")
         if ast_diff.py3:
             self._test_differ("raise a", "raise",
-                              ((1, 0), (1, 0), 'ast.Raise.exc differ'))
+                              ((1, 0), (1, 0), "ast.Raise.exc differ"))
         else:
             self._test_differ("raise a", "raise",
-                              ((1, 0), (1, 0), 'ast.Raise.type differ'))
+                              ((1, 0), (1, 0), "ast.Raise.type differ"))
         self._test_same("raise a", "raise a")
         self._test_differ("raise a", "raise b",
                           ((1, 6), (1, 6), "ast.Name.id differ a b"))
@@ -341,17 +398,17 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("with a:\n    pass", "with a:\n    pass")
         if ast_diff.py3:
             self._test_differ("with a:\n    pass", "with a, b:\n    pass",
-                              ((1, 0), (1, 0), 'length of ast.With.items differ'))
+                              ((1, 0), (1, 0), "length of ast.With.items differ"))
         else:
             self._test_differ("with a:\n    pass", "with a, b:\n    pass",
                               (((2, 4), (1, 8), "different type <class '_ast.Pass'> <class '_ast.With'>")))
         self._test_same("with a as x:\n    pass", "with a as x:\n    pass")
         if ast_diff.py3:
             self._test_differ("with a as x:\n    pass", "with a:\n    pass",
-                              ((1, 0), (1, 0), 'ast.With.items[0].optional_vars differ'))
+                              ((1, 0), (1, 0), "ast.With.items[0].optional_vars differ"))
         else:
             self._test_differ("with a as x:\n    pass", "with a:\n    pass",
-                              ((1, 5), (1, 5), 'ast.With.optional_vars differ'))
+                              ((1, 5), (1, 5), "ast.With.optional_vars differ"))
         self._test_differ("with a:\n    pass", "with b:\n    pass",
                           ((1, 5), (1, 5), "ast.Name.id differ a b"))
         self._test_differ("with a as x:\n    pass", "with a as y:\n    pass",
@@ -367,7 +424,7 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 0), (1, 0), "length of ast.AsyncWith.items differ"))
         self._test_same("async with a as x:\n    pass", "async with a as x:\n    pass")
         self._test_differ("async with a as x:\n    pass", "async with a:\n    pass",
-                          ((1, 0), (1, 0), 'ast.AsyncWith.items[0].optional_vars differ'))
+                          ((1, 0), (1, 0), "ast.AsyncWith.items[0].optional_vars differ"))
         self._test_differ("async with a:\n    pass", "async with b:\n    pass",
                           ((1, 11), (1, 11), "ast.Name.id differ a b"))
         self._test_differ("async with a as x:\n    pass", "async with a as y:\n    pass",
@@ -433,9 +490,9 @@ class TestAstDiff(unittest.TestCase):
             self._test_differ("lambda a: x", "lambda b: x",
                               ((1, 7), (1, 7), "ast.Name.id differ a b"))
         self._test_differ("lambda a: x", "lambda a,b: x",
-                          ((1, 0), (1, 0), 'length of ast.Lambda.args.args differ'))
+                          ((1, 0), (1, 0), "length of ast.Lambda.args.args differ"))
         self._test_differ("lambda a,b: x", "lambda a,b=0: x",
-                          ((1, 0), (1, 0), 'length of ast.Lambda.args.defaults differ'))
+                          ((1, 0), (1, 0), "length of ast.Lambda.args.defaults differ"))
         self._test_differ("lambda a: x", "lambda a: y",
                           ((1, 10), (1, 10), "ast.Name.id differ x y"))
         self._test_same("lambda *a: x", "lambda *a: x")
@@ -446,10 +503,14 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 0), (1, 0), "ast.Lambda.args.kwarg differ"))
 
     def test_def(self):
+        if ast_diff.py38:
+            line_with_decorator = 2
+        else:
+            line_with_decorator = 1
         self._test_same("def a():\n    pass", "def a():\n    pass")
         self._test_same("@deco\ndef a():\n    pass", "@deco\ndef a():\n    pass")
         self._test_differ("@deco\ndef a():\n    pass", "def a():\n    pass",
-                          ((1, 0), (1, 0), "length of ast.FunctionDef.decorator_list differ"))
+                          ((line_with_decorator, 0), (1, 0), "length of ast.FunctionDef.decorator_list differ"))
         self._test_differ("@deco1\ndef a():\n    pass", "@deco2\ndef a():\n    pass",
                           ((1, 1), (1, 1), "ast.Name.id differ deco1 deco2"))
         self._test_differ("def a():\n    pass", "def b():\n    pass",
@@ -496,12 +557,42 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("lambda *, b=p: x", "lambda *, b=q: x",
                           ((1, 12), (1, 12), "ast.Name.id differ p q"))
 
+    @unittest.skipUnless(ast_diff.py38, "postonlyargs is added in py38")
+    def test_def_posonlyargs(self):
+        self._test_same("def f(a, /):\n    pass", "def f(a, /):\n    pass")
+        self._test_differ("def f(a, /):\n    pass", "def f(a, b, /):\n    pass",
+                          ((1, 0), (1, 0), "length of ast.FunctionDef.args.posonlyargs differ"))
+        self._test_differ("def f(a, /):\n    pass", "def f(b, /):\n    pass",
+                          ((1, 0), (1, 0), "ast.FunctionDef.args.posonlyargs[0].arg differ a b"))
+        self._test_same("def f(a=p, /):\n    pass", "def f(a=p, /):\n    pass")
+        self._test_differ("def f(a=p, /):\n    pass", "def f(a, /):\n    pass",
+                          ((1, 0), (1, 0), "length of ast.FunctionDef.args.defaults differ"))
+        self._test_differ("def f(a=p, /):\n    pass", "def f(a=q, /):\n    pass",
+                          ((1, 8), (1, 8), "ast.Name.id differ p q"))
+
+    @unittest.skipUnless(ast_diff.py38, "postonlyargs is added in py38")
+    def test_lambda_posonlyargs(self):
+        self._test_same("lambda a, /: x", "lambda a, /: x")
+        self._test_differ("lambda a, /: x", "lambda a, b, /: x",
+                          ((1, 0), (1, 0), "length of ast.Lambda.args.posonlyargs differ"))
+        self._test_differ("lambda a, /: x", "lambda b, /: x",
+                          ((1, 0), (1, 0), "ast.Lambda.args.posonlyargs[0].arg differ a b"))
+        self._test_same("lambda a=p, /: x", "lambda a=p, /: x")
+        self._test_differ("lambda a=p, /: x", "lambda a, /: x",
+                          ((1, 0), (1, 0), "length of ast.Lambda.args.defaults differ"))
+        self._test_differ("lambda a=p, /: x", "lambda a=q, /: x",
+                          ((1, 9), (1, 9), "ast.Name.id differ p q"))
+
     @unittest.skipUnless(ast_diff.py3, "ast.AsyncDef is added in py3")
     def test_asyncdef(self):
+        if ast_diff.py38:
+            line_with_decorator = 2
+        else:
+            line_with_decorator = 1
         self._test_same("async def f():\n    pass", "async def f():\n    pass")
         self._test_same("@deco\nasync def a():\n    pass", "@deco\nasync def a():\n    pass")
         self._test_differ("@deco\nasync def a():\n    pass", "async def a():\n    pass",
-                          ((1, 0), (1, 0), "length of ast.AsyncFunctionDef.decorator_list differ"))
+                          ((line_with_decorator, 0), (1, 0), "length of ast.AsyncFunctionDef.decorator_list differ"))
         self._test_differ("@deco1\nasync def a():\n    pass", "@deco2\nasync def a():\n    pass",
                           ((1, 1), (1, 1), "ast.Name.id differ deco1 deco2"))
         self._test_differ("async def a():\n    pass", "async def b():\n    pass",
@@ -546,9 +637,13 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 0), (1, 0), "ast.Attribute.attr differ x y"))
 
     def test_listcomp(self):
+        if ast_diff.py38:
+            col = 0
+        else:
+            col = 1
         self._test_same("[p for a in x]", "[p for a in x]")
         self._test_differ("[p for a in x]", "[p for a in x for b in y]",
-                          ((1, 1), (1, 1), "length of ast.ListComp.generators differ"))
+                          ((1, col), (1, col), "length of ast.ListComp.generators differ"))
         self._test_differ("[p for a in x]", "[q for a in x]",
                           ((1, 1), (1, 1), "ast.Name.id differ p q"))
         self._test_differ("[p for a in x]", "[p for b in x]",
@@ -557,14 +652,18 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 12), (1, 12), "ast.Name.id differ x y"))
         self._test_same("[p for a in x if s]", "[p for a in x if s]")
         self._test_differ("[p for a in x if s]", "[p for a in x if s if t]",
-                          ((1, 1), (1, 1), "length of ast.comprehension.ifs differ"))
+                          ((1, col), (1, col), "length of ast.comprehension.ifs differ"))
         self._test_differ("[p for a in x if s]", "[p for a in x if t]",
                           ((1, 17), (1, 17), "ast.Name.id differ s t"))
 
     def test_genexp(self):
+        if ast_diff.py38:
+            col = 0
+        else:
+            col = 1
         self._test_same("(p for a in x)", "(p for a in x)")
         self._test_differ("(p for a in x)", "(p for a in x for b in y)",
-                          ((1, 1), (1, 1), "length of ast.GeneratorExp.generators differ"))
+                          ((1, col), (1, col), "length of ast.GeneratorExp.generators differ"))
         self._test_differ("(p for a in x)", "(q for a in x)",
                           ((1, 1), (1, 1), "ast.Name.id differ p q"))
         self._test_differ("(p for a in x)", "(p for b in x)",
@@ -573,7 +672,7 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 12), (1, 12), "ast.Name.id differ x y"))
         self._test_same("(p for a in x if s)", "(p for a in x if s)")
         self._test_differ("(p for a in x if s)", "(p for a in x if s if t)",
-                          ((1, 1), (1, 1), "length of ast.comprehension.ifs differ"))
+                          ((1, col), (1, col), "length of ast.comprehension.ifs differ"))
         self._test_differ("(p for a in x if s)", "(p for a in x if t)",
                           ((1, 17), (1, 17), "ast.Name.id differ s t"))
 
@@ -620,10 +719,14 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 19), (1, 19), "ast.Name.id differ s t"))
 
     def test_class(self):
+        if ast_diff.py38:
+            line_with_decorator = 2
+        else:
+            line_with_decorator = 1
         self._test_same("class c:\n    pass", "class c:\n    pass")
         self._test_same("@deco\nclass c:\n    pass", "@deco\nclass c:\n    pass")
         self._test_differ("@deco\nclass c:\n    pass", "class c:\n    pass",
-                          ((1, 0), (1, 0), "length of ast.ClassDef.decorator_list differ"))
+                          ((line_with_decorator, 0), (1, 0), "length of ast.ClassDef.decorator_list differ"))
         self._test_differ("@deco1\nclass c:\n    pass", "@deco2\nclass c:\n    pass",
                           ((1, 1), (1, 1), "ast.Name.id differ deco1 deco2"))
         self._test_differ("class c:\n    pass", "class d:\n    pass",
@@ -750,6 +853,13 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("await a", "await b",
                           ((1, 6), (1, 6), "ast.Name.id differ a b"))
 
+    @unittest.skipUnless(ast_diff.py38, "ast.NamedExpr is added in py38")
+    def test_namedexpr(self):
+        self._test_same("(a := x)", "(a := x)")
+        self._test_differ("(a := x)", "(b := x)",
+                          ((1, 1), (1, 1), "ast.Name.id differ a b"))
+        self._test_differ("(a := x)", "(a := y)",
+                          ((1, 6), (1, 6), "ast.Name.id differ x y"))
 
 if __name__ == '__main__':
     unittest.main()
