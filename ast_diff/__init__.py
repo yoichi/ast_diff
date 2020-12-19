@@ -5,10 +5,12 @@ if sys.version_info.major < 3:
     from itertools import izip_longest as zip_longest
     py3 = False
     py38 = False
+    py39 = False
 else:
     from itertools import zip_longest
     py3 = True
     py38 = sys.version_info.minor >= 8
+    py39 = sys.version_info.minor >= 9
 
 
 class DiffFound(Exception):
@@ -86,7 +88,7 @@ def ast_diff(tree1, tree2):
     for node1, node2 in zip_longest(ast.walk(tree1), ast.walk(tree2)):
         try:
             if type(node1) != type(node2):
-                raise DiffFound("different type %s %s" % (type(node1), type(node2)))
+                raise DiffFound("different type %s %s" % (type(node1).__name__, type(node2).__name__))
             elif isinstance(node1, ast.Module):
                 # diff of len(ast.Module.body) will be handle later
                 # since 'Module' object has no attribute 'lineno'
@@ -100,7 +102,7 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.AugAssign):
                 if node1.op != node2.op:
                     raise DiffFound("ast.AugAssign.op differ %s %s" %
-                                    (type(node1.op), type(node2.op)))
+                                    (type(node1.op).__name__, type(node2.op).__name__))
             elif py3 and isinstance(node1, ast.AnnAssign):
                 pass
             elif isinstance(node1, ast.Pass):
@@ -147,7 +149,7 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.BoolOp):
                 if node1.op != node2.op:
                     raise DiffFound("ast.BoolOp.op differ %s %s" %
-                                    (type(node1.op), type(node2.op)))
+                                    (type(node1.op).__name__, type(node2.op).__name__))
             elif isinstance(node1, ast.Compare):
                 if len(node1.comparators) != len(node2.comparators):
                     raise DiffFound("length of ast.Compare.comparators differ")
@@ -248,10 +250,10 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.UnaryOp):
                 if node1.op != node2.op:
                     raise DiffFound("ast.UnaryOp.op differ %s %s" %
-                                    (type(node1.op), type(node2.op)))
+                                    (type(node1.op).__name__, type(node2.op).__name__))
             elif isinstance(node1, ast.BinOp):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.BinOp.op differ %s %s" % (type(node1.op), type(node2.op)))
+                    raise DiffFound("ast.BinOp.op differ %s %s" % (type(node1.op).__name__, type(node2.op).__name__))
             elif isinstance(node1, ast.Delete):
                 pass
             elif isinstance(node1, ast.Subscript):
@@ -259,7 +261,7 @@ def ast_diff(tree1, tree2):
                 slice2 = node2.slice
                 if type(slice1) != type(slice2):
                     raise DiffFound("type of ast.Subscript.slice differ %s %s" %
-                                    (type(slice1), type(slice2)))
+                                    (type(slice1).__name__, type(slice2).__name__))
                 if isinstance(slice1, ast.Slice):
                     if (slice1.lower is None) != (slice2.lower is None):
                         raise DiffFound("ast.Subscript.slice.lower differ")
