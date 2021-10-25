@@ -150,12 +150,14 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("int()", "int(1)", ((1, 0), (1, 0), "length of ast.Call.args differ"))
         self._test_same("int(*[1])", "int(*[1])")
         if ast_diff.py3:
-            self._test_differ("int()", "int(*[1])", ((1, 0), (1, 0), "length of ast.Call.args differ"))
+            self._test_differ("int()", "int(*[1])",
+                              ((1, 0), (1, 0), "length of ast.Call.args differ"))
         else:
             self._test_differ("int()", "int(*[1])", ((1, 0), (1, 0), "ast.Call.starargs differ"))
         self._test_differ("int()", "float()", ((1, 0), (1, 0), "ast.Name.id differ int float"))
         self._test_same("func(a=1)", "func(a=1)")
-        self._test_differ("func(a=1)", "func(a=1, b=1)", ((1, 0), (1, 0), "length of ast.Call.keywords differ"))
+        self._test_differ("func(a=1)", "func(a=1, b=1)",
+                          ((1, 0), (1, 0), "length of ast.Call.keywords differ"))
         self._test_differ("func(a=1)", "func(b=1)", ((1, 0), (1, 0), "ast.Call.keywords differ"))
 
     def test_compare(self):
@@ -275,9 +277,12 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("a[0]", "b[0]", ((1, 0), (1, 0), "ast.Name.id differ a b"))
         self._test_differ("a[0]", "a[1]", ((1, 2), (1, 2), "%s differ 0 1" % num_value))
         if ast_diff.py39:
-            self._test_differ("a[0]", "a[:]", ((1, 0), (1, 0), "type of ast.Subscript.slice differ Constant Slice"))
+            self._test_differ("a[0]", "a[:]",
+                              ((1, 0), (1, 0),
+                               "type of ast.Subscript.slice differ Constant Slice"))
         else:
-            self._test_differ("a[0]", "a[:]", ((1, 0), (1, 0), "type of ast.Subscript.slice differ Index Slice"))
+            self._test_differ("a[0]", "a[:]",
+                              ((1, 0), (1, 0), "type of ast.Subscript.slice differ Index Slice"))
         self._test_same("a[:]", "a[:]")
         self._test_differ("a[:]", "a[0:]", ((1, 0), (1, 0), "ast.Subscript.slice.lower differ"))
         self._test_differ("a[:]", "a[:0]", ((1, 0), (1, 0), "ast.Subscript.slice.upper differ"))
@@ -512,7 +517,8 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("def a():\n    pass", "def a():\n    pass")
         self._test_same("@deco\ndef a():\n    pass", "@deco\ndef a():\n    pass")
         self._test_differ("@deco\ndef a():\n    pass", "def a():\n    pass",
-                          ((line_with_decorator, 0), (1, 0), "length of ast.FunctionDef.decorator_list differ"))
+                          ((line_with_decorator, 0), (1, 0),
+                           "length of ast.FunctionDef.decorator_list differ"))
         self._test_differ("@deco1\ndef a():\n    pass", "@deco2\ndef a():\n    pass",
                           ((1, 1), (1, 1), "ast.Name.id differ deco1 deco2"))
         self._test_differ("def a():\n    pass", "def b():\n    pass",
@@ -594,7 +600,8 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("async def f():\n    pass", "async def f():\n    pass")
         self._test_same("@deco\nasync def a():\n    pass", "@deco\nasync def a():\n    pass")
         self._test_differ("@deco\nasync def a():\n    pass", "async def a():\n    pass",
-                          ((line_with_decorator, 0), (1, 0), "length of ast.AsyncFunctionDef.decorator_list differ"))
+                          ((line_with_decorator, 0), (1, 0),
+                           "length of ast.AsyncFunctionDef.decorator_list differ"))
         self._test_differ("@deco1\nasync def a():\n    pass", "@deco2\nasync def a():\n    pass",
                           ((1, 1), (1, 1), "ast.Name.id differ deco1 deco2"))
         self._test_differ("async def a():\n    pass", "async def b():\n    pass",
@@ -728,7 +735,8 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("class c:\n    pass", "class c:\n    pass")
         self._test_same("@deco\nclass c:\n    pass", "@deco\nclass c:\n    pass")
         self._test_differ("@deco\nclass c:\n    pass", "class c:\n    pass",
-                          ((line_with_decorator, 0), (1, 0), "length of ast.ClassDef.decorator_list differ"))
+                          ((line_with_decorator, 0), (1, 0),
+                           "length of ast.ClassDef.decorator_list differ"))
         self._test_differ("@deco1\nclass c:\n    pass", "@deco2\nclass c:\n    pass",
                           ((1, 1), (1, 1), "ast.Name.id differ deco1 deco2"))
         self._test_differ("class c:\n    pass", "class d:\n    pass",
@@ -828,9 +836,10 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("try:\n    pass\nfinally:\n    pass\n    pass",
                           "try:\n    pass\nfinally:\n    pass",
                           ((1, 0), (1, 0), "length of ast.TryFinally.finalbody differ"))
-        self._test_differ("try:\n    pass\nexcept a:\n    pass\nexcept b:\n    pass\nfinally:\n    pass",
-                          "try:\n    pass\nexcept a:\n    pass\nfinally:\n    pass",
-                          ((1, 0), (1, 0), "length of ast.TryExcept.handlers differ"))
+        self._test_differ(
+            "try:\n    pass\nexcept a:\n    pass\nexcept b:\n    pass\nfinally:\n    pass",
+            "try:\n    pass\nexcept a:\n    pass\nfinally:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryExcept.handlers differ"))
 
     def test_yield(self):
         self._test_same("def f():\n    yield", "def f():\n    yield")
@@ -862,6 +871,7 @@ class TestAstDiff(unittest.TestCase):
                           ((1, 1), (1, 1), "ast.Name.id differ a b"))
         self._test_differ("(a := x)", "(a := y)",
                           ((1, 6), (1, 6), "ast.Name.id differ x y"))
+
 
 if __name__ == '__main__':
     unittest.main()

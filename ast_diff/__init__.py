@@ -88,7 +88,8 @@ def ast_diff(tree1, tree2):
     for node1, node2 in zip_longest(ast.walk(tree1), ast.walk(tree2)):
         try:
             if type(node1) != type(node2):
-                raise DiffFound("different type %s %s" % (type(node1).__name__, type(node2).__name__))
+                raise DiffFound("different type %s %s" %
+                                (type(node1).__name__, type(node2).__name__))
             elif isinstance(node1, ast.Module):
                 # diff of len(ast.Module.body) will be handle later
                 # since 'Module' object has no attribute 'lineno'
@@ -112,7 +113,8 @@ def ast_diff(tree1, tree2):
                     raise DiffFound("length of ast.Call.args differ")
                 elif len(node1.keywords) != len(node2.keywords):
                     raise DiffFound("length of ast.Call.keywords differ")
-                elif any(k1.arg != k2.arg for k1, k2 in zip(node1.keywords, node2.keywords)):
+                elif any(k1.arg != k2.arg for k1, k2 in
+                         zip(node1.keywords, node2.keywords)):
                     raise DiffFound("ast.Call.keywords differ")
                 elif not py3 and (node1.starargs is None) != (node2.starargs is None):
                     raise DiffFound("ast.Call.starargs differ")
@@ -253,7 +255,8 @@ def ast_diff(tree1, tree2):
                                     (type(node1.op).__name__, type(node2.op).__name__))
             elif isinstance(node1, ast.BinOp):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.BinOp.op differ %s %s" % (type(node1.op).__name__, type(node2.op).__name__))
+                    raise DiffFound("ast.BinOp.op differ %s %s" %
+                                    (type(node1.op).__name__, type(node2.op).__name__))
             elif isinstance(node1, ast.Delete):
                 pass
             elif isinstance(node1, ast.Subscript):
