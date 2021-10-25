@@ -872,6 +872,28 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("(a := x)", "(a := y)",
                           ((1, 6), (1, 6), "ast.Name.id differ x y"))
 
+    @unittest.skipUnless(ast_diff.py39, "PEP 614 support is added in Python 3.9")
+    def test_pep614(self):
+        self._test_same("@a[b]\ndef f():\n    pass",
+                        "@a[b]\ndef f():\n    pass")
+        self._test_same("@a.b[c]\ndef f():\n    pass",
+                        "@a.b[c]\ndef f():\n    pass")
+        self._test_differ("@a[b]\ndef f():\n    pass",
+                          "@_[b]\ndef f():\n    pass",
+                          ((1, 1), (1, 1), 'ast.Name.id differ a _'))
+        self._test_differ("@a[b]\ndef f():\n    pass",
+                          "@a[_]\ndef f():\n    pass",
+                          ((1, 3), (1, 3), 'ast.Name.id differ b _'))
+        self._test_differ("@a.b[c]\ndef f():\n    pass",
+                          "@_.b[c]\ndef f():\n    pass",
+                          ((1, 1), (1, 1), 'ast.Name.id differ a _'))
+        self._test_differ("@a.b[c]\ndef f():\n    pass",
+                          "@a._[c]\ndef f():\n    pass",
+                          ((1, 1), (1, 1), 'ast.Attribute.attr differ b _'))
+        self._test_differ("@a.b[c]\ndef f():\n    pass",
+                          "@a.b[_]\ndef f():\n    pass",
+                          ((1, 5), (1, 5), 'ast.Name.id differ c _'))
+
     @unittest.skipUnless(ast_diff.py310, "structural pattern matching is added in Python 3.10")
     def test_match(self):
         self._test_same("match a:\n    case _:\n        pass",
