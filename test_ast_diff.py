@@ -904,6 +904,23 @@ class TestAstDiff(unittest.TestCase):
                           "match a:\n    case A(b):\n        pass",
                           ((2, 11), (2, 11), "ast.MatchAs.name differ"))
 
+    @unittest.skipUnless(ast_diff.py310, "parenthesized context manager is added in Python 3.10")
+    def test_parenthesized_context_manager(self):
+        self._test_same("with (a as b, c as d):\n    pass",
+                        "with (a as b, c as d):\n    pass")
+        self._test_differ("with (_ as b, c as d):\n    pass",
+                          "with (a as b, c as d):\n    pass",
+                          ((1, 6), (1, 6), "ast.Name.id differ _ a"))
+        self._test_differ("with (a as _, c as d):\n    pass",
+                          "with (a as b, c as d):\n    pass",
+                          ((1, 11), (1, 11), "ast.Name.id differ _ b"))
+        self._test_differ("with (a as b, _ as d):\n    pass",
+                          "with (a as b, c as d):\n    pass",
+                          ((1, 14), (1, 14), "ast.Name.id differ _ c"))
+        self._test_differ("with (a as b, c as _):\n    pass",
+                          "with (a as b, c as d):\n    pass",
+                          ((1, 19), (1, 19), "ast.Name.id differ _ d"))
+
 
 if __name__ == '__main__':
     unittest.main()
