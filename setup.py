@@ -11,8 +11,5 @@ setuptools.setup(
             'astdiff = ast_diff:main',
         ],
     },
-    setup_requires=[
-        'flake8',
-    ],
     test_suite='test_ast_diff'
 )
