@@ -6,11 +6,13 @@ if sys.version_info.major < 3:
     py3 = False
     py38 = False
     py39 = False
+    py310 = False
 else:
     from itertools import zip_longest
     py3 = True
     py38 = sys.version_info.minor >= 8
     py39 = sys.version_info.minor >= 9
+    py310 = sys.version_info.minor >= 10
 
 
 class DiffFound(Exception):
@@ -377,6 +379,20 @@ def ast_diff(tree1, tree2):
             elif py3 and not py38 and isinstance(node1, ast.Ellipsis):
                 pass
             elif py3 and isinstance(node1, ast.Await):
+                pass
+            elif py310 and isinstance(node1, ast.Match):
+                if len(node1.cases) != len(node2.cases):
+                    raise DiffFound("length of ast.Match.cases differ")
+            elif py310 and isinstance(node1, ast.match_case):
+                pass
+            elif py310 and isinstance(node1, ast.MatchAs):
+                if node1.name != node2.name:
+                    raise DiffFound("ast.MatchAs.name differ")
+            elif py310 and isinstance(node1, ast.MatchValue):
+                pass
+            elif py310 and isinstance(node1, ast.MatchSequence):
+                pass
+            elif py310 and isinstance(node1, ast.MatchClass):
                 pass
             else:
                 if node1 != node2:

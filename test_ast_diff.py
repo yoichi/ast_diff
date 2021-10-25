@@ -872,6 +872,38 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("(a := x)", "(a := y)",
                           ((1, 6), (1, 6), "ast.Name.id differ x y"))
 
+    @unittest.skipUnless(ast_diff.py310, "structural pattern matching is added in Python 3.10")
+    def test_match(self):
+        self._test_same("match a:\n    case _:\n        pass",
+                        "match a:\n    case _:\n        pass")
+        self._test_differ("match a:\n    case _:\n        pass\n    case _:\n        pass",
+                          "match a:\n    case _:\n        pass",
+                          ((1, 0), (1, 0), "length of ast.Match.cases differ"))
+        self._test_differ("match a:\n    case _:\n        pass",
+                          "match b:\n    case _:\n        pass",
+                          ((1, 6), (1, 6), "ast.Name.id differ a b"))
+        self._test_differ("match a:\n    case b:\n        pass",
+                          "match a:\n    case c:\n        pass",
+                          ((2, 9), (2, 9), "ast.MatchAs.name differ"))
+        self._test_same("match a:\n    case 0:\n        pass",
+                        "match a:\n    case 0:\n        pass")
+        self._test_differ("match a:\n    case 0:\n        pass",
+                          "match a:\n    case 1:\n        pass",
+                          ((2, 9), (2, 9), "ast.Constant.value differ 0 1"))
+        self._test_same("match a:\n    case (b, c):\n        pass",
+                        "match a:\n    case (b, c):\n        pass")
+        self._test_differ("match a:\n    case (b, c):\n        pass",
+                          "match a:\n    case (_, c):\n        pass",
+                          ((2, 10), (2, 10), "ast.MatchAs.name differ"))
+        self._test_same("match a:\n    case A():\n        pass",
+                        "match a:\n    case A():\n        pass")
+        self._test_differ("match a:\n    case A():\n        pass",
+                          "match a:\n    case B():\n        pass",
+                          ((2, 9), (2, 9), "ast.Name.id differ A B"))
+        self._test_differ("match a:\n    case A(a):\n        pass",
+                          "match a:\n    case A(b):\n        pass",
+                          ((2, 11), (2, 11), "ast.MatchAs.name differ"))
+
 
 if __name__ == '__main__':
     unittest.main()
