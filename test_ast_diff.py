@@ -872,6 +872,77 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ("(a := x)", "(a := y)",
                           ((1, 6), (1, 6), "ast.Name.id differ x y"))
 
+    @unittest.skipUnless(ast_diff.py39, "PEP 614 support is added in Python 3.9")
+    def test_pep614(self):
+        self._test_same("@a[b]\ndef f():\n    pass",
+                        "@a[b]\ndef f():\n    pass")
+        self._test_same("@a.b[c]\ndef f():\n    pass",
+                        "@a.b[c]\ndef f():\n    pass")
+        self._test_differ("@a[b]\ndef f():\n    pass",
+                          "@_[b]\ndef f():\n    pass",
+                          ((1, 1), (1, 1), 'ast.Name.id differ a _'))
+        self._test_differ("@a[b]\ndef f():\n    pass",
+                          "@a[_]\ndef f():\n    pass",
+                          ((1, 3), (1, 3), 'ast.Name.id differ b _'))
+        self._test_differ("@a.b[c]\ndef f():\n    pass",
+                          "@_.b[c]\ndef f():\n    pass",
+                          ((1, 1), (1, 1), 'ast.Name.id differ a _'))
+        self._test_differ("@a.b[c]\ndef f():\n    pass",
+                          "@a._[c]\ndef f():\n    pass",
+                          ((1, 1), (1, 1), 'ast.Attribute.attr differ b _'))
+        self._test_differ("@a.b[c]\ndef f():\n    pass",
+                          "@a.b[_]\ndef f():\n    pass",
+                          ((1, 5), (1, 5), 'ast.Name.id differ c _'))
+
+    @unittest.skipUnless(ast_diff.py310, "structural pattern matching is added in Python 3.10")
+    def test_match(self):
+        self._test_same("match a:\n    case _:\n        pass",
+                        "match a:\n    case _:\n        pass")
+        self._test_differ("match a:\n    case _:\n        pass\n    case _:\n        pass",
+                          "match a:\n    case _:\n        pass",
+                          ((1, 0), (1, 0), "length of ast.Match.cases differ"))
+        self._test_differ("match a:\n    case _:\n        pass",
+                          "match b:\n    case _:\n        pass",
+                          ((1, 6), (1, 6), "ast.Name.id differ a b"))
+        self._test_differ("match a:\n    case b:\n        pass",
+                          "match a:\n    case c:\n        pass",
+                          ((2, 9), (2, 9), "ast.MatchAs.name differ"))
+        self._test_same("match a:\n    case 0:\n        pass",
+                        "match a:\n    case 0:\n        pass")
+        self._test_differ("match a:\n    case 0:\n        pass",
+                          "match a:\n    case 1:\n        pass",
+                          ((2, 9), (2, 9), "ast.Constant.value differ 0 1"))
+        self._test_same("match a:\n    case (b, c):\n        pass",
+                        "match a:\n    case (b, c):\n        pass")
+        self._test_differ("match a:\n    case (b, c):\n        pass",
+                          "match a:\n    case (_, c):\n        pass",
+                          ((2, 10), (2, 10), "ast.MatchAs.name differ"))
+        self._test_same("match a:\n    case A():\n        pass",
+                        "match a:\n    case A():\n        pass")
+        self._test_differ("match a:\n    case A():\n        pass",
+                          "match a:\n    case B():\n        pass",
+                          ((2, 9), (2, 9), "ast.Name.id differ A B"))
+        self._test_differ("match a:\n    case A(a):\n        pass",
+                          "match a:\n    case A(b):\n        pass",
+                          ((2, 11), (2, 11), "ast.MatchAs.name differ"))
+
+    @unittest.skipUnless(ast_diff.py310, "parenthesized context manager is added in Python 3.10")
+    def test_parenthesized_context_manager(self):
+        self._test_same("with (a as b, c as d):\n    pass",
+                        "with (a as b, c as d):\n    pass")
+        self._test_differ("with (_ as b, c as d):\n    pass",
+                          "with (a as b, c as d):\n    pass",
+                          ((1, 6), (1, 6), "ast.Name.id differ _ a"))
+        self._test_differ("with (a as _, c as d):\n    pass",
+                          "with (a as b, c as d):\n    pass",
+                          ((1, 11), (1, 11), "ast.Name.id differ _ b"))
+        self._test_differ("with (a as b, _ as d):\n    pass",
+                          "with (a as b, c as d):\n    pass",
+                          ((1, 14), (1, 14), "ast.Name.id differ _ c"))
+        self._test_differ("with (a as b, c as _):\n    pass",
+                          "with (a as b, c as d):\n    pass",
+                          ((1, 19), (1, 19), "ast.Name.id differ _ d"))
+
 
 if __name__ == '__main__':
     unittest.main()
