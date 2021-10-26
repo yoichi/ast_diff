@@ -408,20 +408,32 @@ def ast_diff(tree1, tree2):
     return None
 
 
-def main():
-    def load(fname):
-        with open(fname) as f:
-            return ast.parse(f.read())
+def ast_parse_file(fname):
+    with open(fname) as f:
+        return ast.parse(f.read())
 
+
+def main(fname1, fname2):
+    ast1 = ast_parse_file(fname1)
+    ast2 = ast_parse_file(fname2)
+    result = ast_diff(ast1, ast2)
+    if result is not None:
+        print(result)
+        import difflib
+        print('\n'.join(difflib.unified_diff(
+            ast.dump(ast1, indent=1).splitlines(),
+            ast.dump(ast2, indent=1).splitlines(),
+            fromfile=fname1, tofile=fname2,
+            lineterm='')))
+        return 1
+    assert ast.dump(ast1) == ast.dump(ast2)
+    return 0
+
+
+if __name__ == '__main__':
     if len(sys.argv) != 3:
         print("usage: %s file1 file2" % sys.argv[0])
         sys.exit(-1)
     fname1 = sys.argv[1]
     fname2 = sys.argv[2]
-    result = ast_diff(load(fname1), load(fname2))
-    print(result)
-    sys.exit(result is not None)
-
-
-if __name__ == '__main__':
-    main()
+    sys.exit(main(fname1, fname2))
