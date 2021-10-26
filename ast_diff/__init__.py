@@ -4,12 +4,14 @@ import sys
 
 if sys.version_info.major < 3:
     from itertools import izip_longest as zip_longest
+
     py3 = False
     py38 = False
     py39 = False
     py310 = False
 else:
     from itertools import zip_longest
+
     py3 = True
     py38 = sys.version_info.minor >= 8
     py39 = sys.version_info.minor >= 9
@@ -39,7 +41,9 @@ def _funcdef_diff(node_name, node1, node2):
     if len(node1.decorator_list) != len(node2.decorator_list):
         raise DiffFound("length of ast.%s.decorator_list differ" % node_name)
     if node1.name != node2.name:
-        raise DiffFound("ast.%s.name differ %s %s" % (node_name, node1.name, node2.name))
+        raise DiffFound(
+            "ast.%s.name differ %s %s" % (node_name, node1.name, node2.name)
+        )
     if len(node1.body) != len(node2.body):
         raise DiffFound("length of ast.%s.body differ" % node_name)
     if py3 and (node1.returns is None) != (node2.returns is None):
@@ -55,15 +59,19 @@ def _funcdef_diff(node_name, node1, node2):
             raise DiffFound("length of ast.%s.args.posonlyargs differ" % node_name)
         for i, (poa1, poa2) in enumerate(zip(args1.posonlyargs, args2.posonlyargs)):
             if poa1.arg != poa2.arg:
-                raise DiffFound("ast.%s.args.posonlyargs[%d].arg differ %s %s" %
-                                (node_name, i, poa1.arg, poa2.arg))
+                raise DiffFound(
+                    "ast.%s.args.posonlyargs[%d].arg differ %s %s"
+                    % (node_name, i, poa1.arg, poa2.arg)
+                )
     if py3:
         if len(args1.kwonlyargs) != len(args2.kwonlyargs):
             raise DiffFound("length of ast.%s.args.kwonlyargs differ" % node_name)
         for i, (koa1, koa2) in enumerate(zip(args1.kwonlyargs, args2.kwonlyargs)):
             if koa1.arg != koa2.arg:
-                raise DiffFound("ast.%s.args.kwonlyargs[%d].arg differ %s %s" %
-                                (node_name, i, koa1.arg, koa2.arg))
+                raise DiffFound(
+                    "ast.%s.args.kwonlyargs[%d].arg differ %s %s"
+                    % (node_name, i, koa1.arg, koa2.arg)
+                )
         for kd1, kd2 in zip(args1.kw_defaults, args2.kw_defaults):
             if (kd1 is None) != (kd2 is None):
                 raise DiffFound("ast.%s.args.kw_defaults differ" % node_name)
@@ -79,7 +87,9 @@ def _with_diff(node_name, node1, node2):
             raise DiffFound("length of ast.%s.items differ" % node_name)
         for i, (item1, item2) in enumerate(zip(node1.items, node2.items)):
             if (item1.optional_vars is None) != (item2.optional_vars is None):
-                raise DiffFound("ast.%s.items[%d].optional_vars differ" % (node_name, i))
+                raise DiffFound(
+                    "ast.%s.items[%d].optional_vars differ" % (node_name, i)
+                )
     else:
         if (node1.optional_vars is None) != (node2.optional_vars is None):
             raise DiffFound("ast.%s.optional_vars differ" % node_name)
@@ -91,8 +101,10 @@ def ast_diff(tree1, tree2):
     for node1, node2 in zip_longest(ast.walk(tree1), ast.walk(tree2)):
         try:
             if type(node1) != type(node2):
-                raise DiffFound("different type %s %s" %
-                                (type(node1).__name__, type(node2).__name__))
+                raise DiffFound(
+                    "different type %s %s"
+                    % (type(node1).__name__, type(node2).__name__)
+                )
             elif isinstance(node1, ast.Module):
                 # diff of len(ast.Module.body) will be handle later
                 # since 'Module' object has no attribute 'lineno'
@@ -105,8 +117,10 @@ def ast_diff(tree1, tree2):
                 pass
             elif isinstance(node1, ast.AugAssign):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.AugAssign.op differ %s %s" %
-                                    (type(node1.op).__name__, type(node2.op).__name__))
+                    raise DiffFound(
+                        "ast.AugAssign.op differ %s %s"
+                        % (type(node1.op).__name__, type(node2.op).__name__)
+                    )
             elif py3 and isinstance(node1, ast.AnnAssign):
                 pass
             elif isinstance(node1, ast.Pass):
@@ -116,8 +130,9 @@ def ast_diff(tree1, tree2):
                     raise DiffFound("length of ast.Call.args differ")
                 elif len(node1.keywords) != len(node2.keywords):
                     raise DiffFound("length of ast.Call.keywords differ")
-                elif any(k1.arg != k2.arg for k1, k2 in
-                         zip(node1.keywords, node2.keywords)):
+                elif any(
+                    k1.arg != k2.arg for k1, k2 in zip(node1.keywords, node2.keywords)
+                ):
                     raise DiffFound("ast.Call.keywords differ")
                 elif not py3 and (node1.starargs is None) != (node2.starargs is None):
                     raise DiffFound("ast.Call.starargs differ")
@@ -153,8 +168,10 @@ def ast_diff(tree1, tree2):
                 pass
             elif isinstance(node1, ast.BoolOp):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.BoolOp.op differ %s %s" %
-                                    (type(node1.op).__name__, type(node2.op).__name__))
+                    raise DiffFound(
+                        "ast.BoolOp.op differ %s %s"
+                        % (type(node1.op).__name__, type(node2.op).__name__)
+                    )
             elif isinstance(node1, ast.Compare):
                 if len(node1.comparators) != len(node2.comparators):
                     raise DiffFound("length of ast.Compare.comparators differ")
@@ -171,7 +188,9 @@ def ast_diff(tree1, tree2):
                     raise DiffFound("ast.Nonlocal.names differ")
             elif py38 and isinstance(node1, ast.Constant):
                 if node1.value != node2.value:
-                    raise DiffFound("ast.Constant.value differ %s %s" % (node1.value, node2.value))
+                    raise DiffFound(
+                        "ast.Constant.value differ %s %s" % (node1.value, node2.value)
+                    )
             elif not py38 and isinstance(node1, ast.Num):
                 if node1.n != node2.n:
                     raise DiffFound("ast.Num.n differ %s %s" % (node1.n, node2.n))
@@ -223,17 +242,25 @@ def ast_diff(tree1, tree2):
                 if py38:
                     if len(args1.posonlyargs) != len(args2.posonlyargs):
                         raise DiffFound("length of ast.Lambda.args.posonlyargs differ")
-                    for i, (poa1, poa2) in enumerate(zip(args1.posonlyargs, args2.posonlyargs)):
+                    for i, (poa1, poa2) in enumerate(
+                        zip(args1.posonlyargs, args2.posonlyargs)
+                    ):
                         if poa1.arg != poa2.arg:
-                            raise DiffFound("ast.Lambda.args.posonlyargs[%d].arg differ %s %s" %
-                                            (i, poa1.arg, poa2.arg))
+                            raise DiffFound(
+                                "ast.Lambda.args.posonlyargs[%d].arg differ %s %s"
+                                % (i, poa1.arg, poa2.arg)
+                            )
                 if py3:
                     if len(args1.kwonlyargs) != len(args2.kwonlyargs):
                         raise DiffFound("length of ast.Lambda.args.kwonlyargs differ")
-                    for i, (koa1, koa2) in enumerate(zip(args1.kwonlyargs, args2.kwonlyargs)):
+                    for i, (koa1, koa2) in enumerate(
+                        zip(args1.kwonlyargs, args2.kwonlyargs)
+                    ):
                         if koa1.arg != koa2.arg:
-                            raise DiffFound("ast.Lambda.args.kwonlyargs[%d].arg differ %s %s" %
-                                            (i, koa1.arg, koa2.arg))
+                            raise DiffFound(
+                                "ast.Lambda.args.kwonlyargs[%d].arg differ %s %s"
+                                % (i, koa1.arg, koa2.arg)
+                            )
                     for kd1, kd2 in zip(args1.kw_defaults, args2.kw_defaults):
                         if (kd1 is None) != (kd2 is None):
                             raise DiffFound("ast.Lambda.args.kw_defaults differ")
@@ -254,20 +281,26 @@ def ast_diff(tree1, tree2):
                     raise DiffFound("ast.arg.annotation differ")
             elif isinstance(node1, ast.UnaryOp):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.UnaryOp.op differ %s %s" %
-                                    (type(node1.op).__name__, type(node2.op).__name__))
+                    raise DiffFound(
+                        "ast.UnaryOp.op differ %s %s"
+                        % (type(node1.op).__name__, type(node2.op).__name__)
+                    )
             elif isinstance(node1, ast.BinOp):
                 if node1.op != node2.op:
-                    raise DiffFound("ast.BinOp.op differ %s %s" %
-                                    (type(node1.op).__name__, type(node2.op).__name__))
+                    raise DiffFound(
+                        "ast.BinOp.op differ %s %s"
+                        % (type(node1.op).__name__, type(node2.op).__name__)
+                    )
             elif isinstance(node1, ast.Delete):
                 pass
             elif isinstance(node1, ast.Subscript):
                 slice1 = node1.slice
                 slice2 = node2.slice
                 if type(slice1) != type(slice2):
-                    raise DiffFound("type of ast.Subscript.slice differ %s %s" %
-                                    (type(slice1).__name__, type(slice2).__name__))
+                    raise DiffFound(
+                        "type of ast.Subscript.slice differ %s %s"
+                        % (type(slice1).__name__, type(slice2).__name__)
+                    )
                 if isinstance(slice1, ast.Slice):
                     if (slice1.lower is None) != (slice2.lower is None):
                         raise DiffFound("ast.Subscript.slice.lower differ")
@@ -284,27 +317,39 @@ def ast_diff(tree1, tree2):
                     raise DiffFound("length of ast.Import.names differ")
                 for name1, name2 in zip(node1.names, node2.names):
                     if name1.name != name2.name:
-                        raise DiffFound("ast.alias.name differ %s %s" % (name1.name, name2.name))
+                        raise DiffFound(
+                            "ast.alias.name differ %s %s" % (name1.name, name2.name)
+                        )
                     if name1.asname != name2.asname:
-                        raise DiffFound("ast.alias.asname differ %s %s" %
-                                        (name1.asname, name2.asname))
+                        raise DiffFound(
+                            "ast.alias.asname differ %s %s"
+                            % (name1.asname, name2.asname)
+                        )
             elif isinstance(node1, ast.ImportFrom):
                 if node1.module != node2.module:
-                    raise DiffFound("ast.ImportFrom.module differ %s %s" %
-                                    (node1.module, node2.module))
+                    raise DiffFound(
+                        "ast.ImportFrom.module differ %s %s"
+                        % (node1.module, node2.module)
+                    )
                 if len(node1.names) != len(node2.names):
                     raise DiffFound("length of ast.ImportFrom.names differ")
                 for name1, name2 in zip(node1.names, node2.names):
                     if name1.name != name2.name:
-                        raise DiffFound("ast.alias.name differ %s %s" % (name1.name, name2.name))
+                        raise DiffFound(
+                            "ast.alias.name differ %s %s" % (name1.name, name2.name)
+                        )
                     if name1.asname != name2.asname:
-                        raise DiffFound("ast.alias.asname differ %s %s" %
-                                        (name1.asname, name2.asname))
+                        raise DiffFound(
+                            "ast.alias.asname differ %s %s"
+                            % (name1.asname, name2.asname)
+                        )
             elif isinstance(node1, ast.alias):
                 pass
             elif isinstance(node1, ast.Attribute):
                 if node1.attr != node2.attr:
-                    raise DiffFound("ast.Attribute.attr differ %s %s" % (node1.attr, node2.attr))
+                    raise DiffFound(
+                        "ast.Attribute.attr differ %s %s" % (node1.attr, node2.attr)
+                    )
             elif isinstance(node1, ast.Dict):
                 if len(node1.keys) != len(node2.keys):
                     raise DiffFound("length of ast.Dict.keys differ")
@@ -322,7 +367,9 @@ def ast_diff(tree1, tree2):
                 if len(node1.decorator_list) != len(node2.decorator_list):
                     raise DiffFound("length of ast.ClassDef.decorator_list differ")
                 if node1.name != node2.name:
-                    raise DiffFound("ast.ClassDef.name differ %s %s" % (node1.name, node2.name))
+                    raise DiffFound(
+                        "ast.ClassDef.name differ %s %s" % (node1.name, node2.name)
+                    )
                 if len(node1.bases) != len(node2.bases):
                     raise DiffFound("length of ast.ClassDef.bases differ")
                 if len(node1.body) != len(node2.body):
@@ -373,8 +420,10 @@ def ast_diff(tree1, tree2):
                 pass
             elif py3 and not py38 and isinstance(node1, ast.NameConstant):
                 if node1.value != node2.value:
-                    raise DiffFound("ast.NameConstant.value differ %s %s" %
-                                    (node1.value, node2.value))
+                    raise DiffFound(
+                        "ast.NameConstant.value differ %s %s"
+                        % (node1.value, node2.value)
+                    )
             elif py3 and isinstance(node1, ast.withitem):
                 pass
             elif py3 and not py38 and isinstance(node1, ast.Ellipsis):
@@ -403,9 +452,17 @@ def ast_diff(tree1, tree2):
                 return None, (node2.lineno, node2.col_offset), e.args[0]
             if node2 is None:
                 return (node1.lineno, node1.col_offset), None, e.args[0]
-            return (node1.lineno, node1.col_offset), (node2.lineno, node2.col_offset), e.args[0]
+            return (
+                (node1.lineno, node1.col_offset),
+                (node2.lineno, node2.col_offset),
+                e.args[0],
+            )
         except Exception as e:
-            return (node1.lineno, node1.col_offset), (node2.lineno, node2.col_offset), str(e)
+            return (
+                (node1.lineno, node1.col_offset),
+                (node2.lineno, node2.col_offset),
+                str(e),
+            )
     return None
 
 
@@ -420,17 +477,23 @@ def main(fname1, fname2):
     result = ast_diff(ast1, ast2)
     if result is not None:
         print(result)
-        print('\n'.join(difflib.unified_diff(
-            ast.dump(ast1, indent=1).splitlines(),
-            ast.dump(ast2, indent=1).splitlines(),
-            fromfile=fname1, tofile=fname2,
-            lineterm='')))
+        print(
+            "\n".join(
+                difflib.unified_diff(
+                    ast.dump(ast1, indent=1).splitlines(),
+                    ast.dump(ast2, indent=1).splitlines(),
+                    fromfile=fname1,
+                    tofile=fname2,
+                    lineterm="",
+                )
+            )
+        )
         return 1
     assert ast.dump(ast1) == ast.dump(ast2)
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("usage: %s file1 file2" % sys.argv[0])
         sys.exit(-1)
