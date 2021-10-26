@@ -1,4 +1,5 @@
 import ast
+import difflib
 import sys
 
 if sys.version_info.major < 3:
@@ -419,7 +420,6 @@ def main(fname1, fname2):
     result = ast_diff(ast1, ast2)
     if result is not None:
         print(result)
-        import difflib
         print('\n'.join(difflib.unified_diff(
             ast.dump(ast1, indent=1).splitlines(),
             ast.dump(ast2, indent=1).splitlines(),
