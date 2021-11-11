@@ -442,6 +442,8 @@ def ast_diff(tree1, tree2):
                 pass
             elif py310 and isinstance(node1, ast.MatchSequence):
                 pass
+            elif py310 and isinstance(node1, ast.MatchMapping):
+                pass
             elif py310 and isinstance(node1, ast.MatchClass):
                 pass
             else:

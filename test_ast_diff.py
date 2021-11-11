@@ -1430,6 +1430,29 @@ class TestAstDiff(unittest.TestCase):
             ((2, 10), (2, 10), "ast.MatchAs.name differ"),
         )
         self._test_same(
+            "match a:\n    case {'b': c}:\n        pass",
+            "match a:\n    case {'b': c}:\n        pass",
+        )
+        self._test_differ(
+            "match a:\n    case {'b': c}:\n        pass",
+            "match a:\n    case {'d': c}:\n        pass",
+            ((2, 10), (2, 10), "ast.Constant.value differ b d"),
+        )
+        self._test_differ(
+            "match a:\n    case {'b': c}:\n        pass",
+            "match a:\n    case {'b': d}:\n        pass",
+            ((2, 15), (2, 15), "ast.MatchAs.name differ"),
+        )
+        self._test_same(
+            "match a:\n    case {'b': 'c'}:\n        pass",
+            "match a:\n    case {'b': 'c'}:\n        pass",
+        )
+        self._test_differ(
+            "match a:\n    case {'b': 'c'}:\n        pass",
+            "match a:\n    case {'b': 'd'}:\n        pass",
+            ((2, 15), (2, 15), "ast.Constant.value differ c d"),
+        )
+        self._test_same(
             "match a:\n    case A():\n        pass",
             "match a:\n    case A():\n        pass",
         )
