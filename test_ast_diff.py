@@ -1421,6 +1421,24 @@ class TestAstDiff(unittest.TestCase):
             ((2, 9), (2, 9), "ast.Constant.value differ 0 1"),
         )
         self._test_same(
+            "match a:\n    case b|c:\n        pass",
+            "match a:\n    case b|c:\n        pass",
+        )
+        self._test_differ(
+            "match a:\n    case b|c:\n        pass",
+            "match a:\n    case b|d:\n        pass",
+            ((2, 11), (2, 11), "ast.MatchAs.name differ"),
+        )
+        self._test_same(
+            "match a:\n    case None:\n        pass",
+            "match a:\n    case None:\n        pass",
+        )
+        self._test_differ(
+            "match a:\n    case True:\n        pass",
+            "match a:\n    case False:\n        pass",
+            ((2, 9), (2, 9), "ast.MatchSingleton.value differ"),
+        )
+        self._test_same(
             "match a:\n    case (b, c):\n        pass",
             "match a:\n    case (b, c):\n        pass",
         )
@@ -1428,6 +1446,20 @@ class TestAstDiff(unittest.TestCase):
             "match a:\n    case (b, c):\n        pass",
             "match a:\n    case (_, c):\n        pass",
             ((2, 10), (2, 10), "ast.MatchAs.name differ"),
+        )
+        self._test_same(
+            "match a:\n    case [1, 2, *b]:\n        pass",
+            "match a:\n    case [1, 2, *b]:\n        pass",
+        )
+        self._test_differ(
+            "match a:\n    case [1, 2, *b]:\n        pass",
+            "match a:\n    case [1, 2, *c]:\n        pass",
+            ((2, 16), (2, 16), "ast.MatchStar.name differ"),
+        )
+        self._test_differ(
+            "match a:\n    case [1, 2, *_]:\n        pass",
+            "match a:\n    case [1, 2, *c]:\n        pass",
+            ((2, 16), (2, 16), "ast.MatchStar.name differ"),
         )
         self._test_same(
             "match a:\n    case {'b': c}:\n        pass",
