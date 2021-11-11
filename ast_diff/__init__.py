@@ -440,8 +440,16 @@ def ast_diff(tree1, tree2):
                     raise DiffFound("ast.MatchAs.name differ")
             elif py310 and isinstance(node1, ast.MatchValue):
                 pass
+            elif py310 and isinstance(node1, ast.MatchOr):
+                pass
+            elif py310 and isinstance(node1, ast.MatchSingleton):
+                if node1.value != node2.value:
+                    raise DiffFound("ast.MatchSingleton.value differ")
             elif py310 and isinstance(node1, ast.MatchSequence):
                 pass
+            elif py310 and isinstance(node1, ast.MatchStar):
+                if node1.name != node2.name:
+                    raise DiffFound("ast.MatchStar.name differ")
             elif py310 and isinstance(node1, ast.MatchMapping):
                 pass
             elif py310 and isinstance(node1, ast.MatchClass):
