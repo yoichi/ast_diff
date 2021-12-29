@@ -487,17 +487,18 @@ def main(fname1, fname2):
     result = ast_diff(ast1, ast2)
     if result is not None:
         print(result)
-        print(
-            "\n".join(
-                difflib.unified_diff(
-                    ast.dump(ast1, indent=1).splitlines(),
-                    ast.dump(ast2, indent=1).splitlines(),
-                    fromfile=fname1,
-                    tofile=fname2,
-                    lineterm="",
+        if py39:
+            print(
+                "\n".join(
+                    difflib.unified_diff(
+                        ast.dump(ast1, indent=1).splitlines(),
+                        ast.dump(ast2, indent=1).splitlines(),
+                        fromfile=fname1,
+                        tofile=fname2,
+                        lineterm="",
+                    )
                 )
             )
-        )
         return 1
     assert ast.dump(ast1) == ast.dump(ast2)
     return 0
