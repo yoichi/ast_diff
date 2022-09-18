@@ -12,6 +12,9 @@ repos:
     rev: 5.0.4
     hooks:
     -   id: flake8
+        args:
+          # make line length compatible with black
+          - "--max-line-length=88"
 -   repo: https://github.com/psf/black
     rev: 22.6.0
     hooks:
