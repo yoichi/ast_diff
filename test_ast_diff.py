@@ -31,7 +31,6 @@ class TestAstDiff(unittest.TestCase):
             "global a", "global b", ((1, 0), (1, 0), "ast.Global.names differ")
         )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.NonLocal is added in py3")
     def test_nonlocal(self):
         self._test_same("nonlocal a", "nonlocal a")
         self._test_differ(
@@ -54,7 +53,6 @@ class TestAstDiff(unittest.TestCase):
         self._test_same("'a'", "'a'")
         self._test_differ("'a'", "'b'", ((1, 0), (1, 0), "%s differ a b" % str_value))
 
-    @unittest.skipUnless(ast_diff.py3, "ast.JoinedStr is added in py3")
     def test_joinedstr(self):
         self._test_same("f'{a}'", "f'{a}'")
         self._test_differ(
@@ -101,7 +99,6 @@ class TestAstDiff(unittest.TestCase):
                 ((1, 0), (1, 0), "ast.Constant.value differ a= b="),
             )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.Bytes is added in py3")
     def test_bytes(self):
         if ast_diff.py38:
             bytes_value = "ast.Constant.value"
@@ -115,7 +112,6 @@ class TestAstDiff(unittest.TestCase):
     def test_pass(self):
         self._test_same("pass", "pass")
 
-    @unittest.skipUnless(ast_diff.py3, "ast.NameConst is added in py3")
     def test_nameconst(self):
         if ast_diff.py38:
             value = "ast.Constant.value"
@@ -169,7 +165,6 @@ class TestAstDiff(unittest.TestCase):
             "a += 1", "a -= 1", ((1, 0), (1, 0), "ast.AugAssign.op differ Add Sub")
         )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.AnnAssign is added in py3")
     def test_annassign(self):
         self._test_same("a: x", "a: x")
         self._test_differ("a: x", "b: x", ((1, 0), (1, 0), "ast.Name.id differ a b"))
@@ -182,14 +177,9 @@ class TestAstDiff(unittest.TestCase):
             "int()", "int(1)", ((1, 0), (1, 0), "length of ast.Call.args differ")
         )
         self._test_same("int(*[1])", "int(*[1])")
-        if ast_diff.py3:
-            self._test_differ(
-                "int()", "int(*[1])", ((1, 0), (1, 0), "length of ast.Call.args differ")
-            )
-        else:
-            self._test_differ(
-                "int()", "int(*[1])", ((1, 0), (1, 0), "ast.Call.starargs differ")
-            )
+        self._test_differ(
+            "int()", "int(*[1])", ((1, 0), (1, 0), "length of ast.Call.args differ")
+        )
         self._test_differ(
             "int()", "float()", ((1, 0), (1, 0), "ast.Name.id differ int float")
         )
@@ -311,7 +301,6 @@ class TestAstDiff(unittest.TestCase):
             ((1, 9), (1, 9), "ast.Name.id differ itr1 itr2"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.AsyncFor is added in py3")
     def test_asyncfor(self):
         self._test_same(
             "async for i in itr:\n    pass", "async for i in itr:\n    pass"
@@ -503,20 +492,12 @@ class TestAstDiff(unittest.TestCase):
 
     def test_raise(self):
         self._test_same("raise", "raise")
-        if ast_diff.py3:
-            self._test_differ(
-                "raise a", "raise", ((1, 0), (1, 0), "ast.Raise.exc differ")
-            )
-        else:
-            self._test_differ(
-                "raise a", "raise", ((1, 0), (1, 0), "ast.Raise.type differ")
-            )
+        self._test_differ("raise a", "raise", ((1, 0), (1, 0), "ast.Raise.exc differ"))
         self._test_same("raise a", "raise a")
         self._test_differ(
             "raise a", "raise b", ((1, 6), (1, 6), "ast.Name.id differ a b")
         )
 
-    @unittest.skipUnless(ast_diff.py3, "raise from syntax is added in py3")
     def test_raise_from(self):
         self._test_same("raise a from x", "raise a from x")
         self._test_differ(
@@ -537,36 +518,18 @@ class TestAstDiff(unittest.TestCase):
         )
 
     def test_with(self):
-        if ast_diff.py3:
-            col = 0
-        else:
-            col = 5
         self._test_same("with a:\n    pass", "with a:\n    pass")
-        if ast_diff.py3:
-            self._test_differ(
-                "with a:\n    pass",
-                "with a, b:\n    pass",
-                ((1, 0), (1, 0), "length of ast.With.items differ"),
-            )
-        else:
-            self._test_differ(
-                "with a:\n    pass",
-                "with a, b:\n    pass",
-                (((2, 4), (1, 8), "different type Pass With")),
-            )
+        self._test_differ(
+            "with a:\n    pass",
+            "with a, b:\n    pass",
+            ((1, 0), (1, 0), "length of ast.With.items differ"),
+        )
         self._test_same("with a as x:\n    pass", "with a as x:\n    pass")
-        if ast_diff.py3:
-            self._test_differ(
-                "with a as x:\n    pass",
-                "with a:\n    pass",
-                ((1, 0), (1, 0), "ast.With.items[0].optional_vars differ"),
-            )
-        else:
-            self._test_differ(
-                "with a as x:\n    pass",
-                "with a:\n    pass",
-                ((1, 5), (1, 5), "ast.With.optional_vars differ"),
-            )
+        self._test_differ(
+            "with a as x:\n    pass",
+            "with a:\n    pass",
+            ((1, 0), (1, 0), "ast.With.items[0].optional_vars differ"),
+        )
         self._test_differ(
             "with a:\n    pass",
             "with b:\n    pass",
@@ -580,10 +543,9 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ(
             "with a:\n    pass\n    pass",
             "with a:\n    pass",
-            ((1, col), (1, col), "length of ast.With.body differ"),
+            ((1, 0), (1, 0), "length of ast.With.body differ"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.AsyncWith is added in py3")
     def test_asyncwith(self):
         self._test_same("async with a:\n    pass", "async with a:\n    pass")
         self._test_differ(
@@ -624,34 +586,6 @@ class TestAstDiff(unittest.TestCase):
             ((1, 10), (1, 10), "ast.Name.id differ m1 m2"),
         )
 
-    @unittest.skipIf(ast_diff.py3, "ast.Print is removed in py3")
-    def test_print(self):
-        self._test_same("print a", "print a")
-        self._test_same("print a,b", "print a,b")
-        self._test_differ(
-            "print a", "print b", ((1, 6), (1, 6), "ast.Name.id differ a b")
-        )
-
-    @unittest.skipIf(ast_diff.py3, "ast.Exec is removed in py3")
-    def test_exec(self):
-        self._test_same("exec 'a'", "exec 'a'")
-        self._test_differ(
-            "exec 'a'", "exec 'b'", ((1, 5), (1, 5), "ast.Str.s differ a b")
-        )
-        self._test_differ(
-            "exec 'a' in {}", "exec 'a'", ((1, 0), (1, 0), "ast.Exec.globals differ")
-        )
-        self._test_differ(
-            "exec 'a' in {}, {}",
-            "exec 'a' in {}",
-            ((1, 0), (1, 0), "ast.Exec.locals differ"),
-        )
-
-    @unittest.skipIf(ast_diff.py3, "ast.Repr is removed in py3")
-    def test_repr(self):
-        self._test_same("`x`", "`x`")
-        self._test_differ("`x`", "`y`", ((1, 1), (1, 1), "ast.Name.id differ x y"))
-
     def test_in(self):
         self._test_same("a in x", "a in x")
         self._test_differ(
@@ -677,14 +611,9 @@ class TestAstDiff(unittest.TestCase):
 
     def test_lambda(self):
         self._test_same("lambda a: x", "lambda a: x")
-        if ast_diff.py3:
-            self._test_differ(
-                "lambda a: x", "lambda b: x", ((1, 7), (1, 7), "ast.arg.arg differ a b")
-            )
-        else:
-            self._test_differ(
-                "lambda a: x", "lambda b: x", ((1, 7), (1, 7), "ast.Name.id differ a b")
-            )
+        self._test_differ(
+            "lambda a: x", "lambda b: x", ((1, 7), (1, 7), "ast.arg.arg differ a b")
+        )
         self._test_differ(
             "lambda a: x",
             "lambda a,b: x",
@@ -742,18 +671,11 @@ class TestAstDiff(unittest.TestCase):
             "def a():\n    pass",
             ((1, 0), (1, 0), "length of ast.FunctionDef.args.args differ"),
         )
-        if ast_diff.py3:
-            self._test_differ(
-                "def a(x):\n    pass",
-                "def a(y):\n    pass",
-                ((1, 6), (1, 6), "ast.arg.arg differ x y"),
-            )
-        else:
-            self._test_differ(
-                "def a(x):\n    pass",
-                "def a(y):\n    pass",
-                ((1, 6), (1, 6), "ast.Name.id differ x y"),
-            )
+        self._test_differ(
+            "def a(x):\n    pass",
+            "def a(y):\n    pass",
+            ((1, 6), (1, 6), "ast.arg.arg differ x y"),
+        )
         self._test_differ(
             "def a(x):\n    pass",
             "def a(x=z):\n    pass",
@@ -775,7 +697,6 @@ class TestAstDiff(unittest.TestCase):
             ((1, 0), (1, 0), "length of ast.FunctionDef.body differ"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "kwonlyargs is added in py3")
     def test_def_kwonlyargs(self):
         self._test_same("def a(*, b):\n    pass", "def a(*, b):\n    pass")
         self._test_differ(
@@ -799,7 +720,6 @@ class TestAstDiff(unittest.TestCase):
             ((1, 11), (1, 11), "ast.Name.id differ x y"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "kwonlyargs is added in py3")
     def test_lambda_kwonlyargs(self):
         self._test_same("lambda *, b: x", "lambda *, b: x")
         self._test_differ(
@@ -873,7 +793,6 @@ class TestAstDiff(unittest.TestCase):
             ((1, 9), (1, 9), "ast.Name.id differ p q"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.AsyncDef is added in py3")
     def test_asyncdef(self):
         if ast_diff.py38:
             line_with_decorator = 2
@@ -933,7 +852,6 @@ class TestAstDiff(unittest.TestCase):
             ((1, 0), (1, 0), "length of ast.AsyncFunctionDef.body differ"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "typing support is added in py3")
     def test_typing(self):
         self._test_same("def a(b: s):\n    pass", "def a(b: s):\n    pass")
         self._test_differ(
@@ -1049,15 +967,11 @@ class TestAstDiff(unittest.TestCase):
         )
 
     def test_setcomp(self):
-        if ast_diff.py3:
-            col = 0
-        else:
-            col = 1
         self._test_same("{p for a in x}", "{p for a in x}")
         self._test_differ(
             "{p for a in x}",
             "{p for a in x for b in y}",
-            ((1, col), (1, col), "length of ast.SetComp.generators differ"),
+            ((1, 0), (1, 0), "length of ast.SetComp.generators differ"),
         )
         self._test_differ(
             "{p for a in x}",
@@ -1078,7 +992,7 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ(
             "{p for a in x if s}",
             "{p for a in x if s if t}",
-            ((1, col), (1, col), "length of ast.comprehension.ifs differ"),
+            ((1, 0), (1, 0), "length of ast.comprehension.ifs differ"),
         )
         self._test_differ(
             "{p for a in x if s}",
@@ -1087,15 +1001,11 @@ class TestAstDiff(unittest.TestCase):
         )
 
     def test_dictcomp(self):
-        if ast_diff.py3:
-            col = 0
-        else:
-            col = 1
         self._test_same("{k:v for a in x}", "{k:v for a in x}")
         self._test_differ(
             "{k:v for a in x}",
             "{k:v for a in x for b in y}",
-            ((1, col), (1, col), "length of ast.DictComp.generators differ"),
+            ((1, 0), (1, 0), "length of ast.DictComp.generators differ"),
         )
         self._test_differ(
             "{k1:v for a in x}",
@@ -1121,7 +1031,7 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ(
             "{k:v for a in x if s}",
             "{k:v for a in x if s if t}",
-            ((1, col), (1, col), "length of ast.comprehension.ifs differ"),
+            ((1, 0), (1, 0), "length of ast.comprehension.ifs differ"),
         )
         self._test_differ(
             "{k:v for a in x if s}",
@@ -1171,7 +1081,6 @@ class TestAstDiff(unittest.TestCase):
             ((1, 0), (1, 0), "length of ast.ClassDef.body differ"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.Try is added in py3")
     def test_try(self):
         self._test_same(
             "try:\n    pass\nexcept:\n    pass", "try:\n    pass\nexcept:\n    pass"
@@ -1236,92 +1145,6 @@ class TestAstDiff(unittest.TestCase):
             ((1, 0), (1, 0), "length of ast.Try.finalbody differ"),
         )
 
-    @unittest.skipIf(
-        ast_diff.py3, "ast.TryExcept is removed (and ast.Try is added) in py3"
-    )
-    def test_tryexcept(self):
-        self._test_same(
-            "try:\n    pass\nexcept:\n    pass", "try:\n    pass\nexcept:\n    pass"
-        )
-        self._test_differ(
-            "try:\n    pass\n    pass\nexcept:\n    pass",
-            "try:\n    pass\nexcept:\n    pass",
-            ((1, 0), (1, 0), "length of ast.TryExcept.body differ"),
-        )
-        self._test_same(
-            "try:\n    pass\nexcept a:\n    pass", "try:\n    pass\nexcept a:\n    pass"
-        )
-        self._test_differ(
-            "try:\n    pass\nexcept a:\n    pass\nexcept b:\n    pass",
-            "try:\n    pass\nexcept a:\n    pass",
-            ((1, 0), (1, 0), "length of ast.TryExcept.handlers differ"),
-        )
-        self._test_differ(
-            "try:\n    pass\nexcept a:\n    pass",
-            "try:\n    pass\nexcept b:\n    pass",
-            ((3, 7), (3, 7), "ast.Name.id differ a b"),
-        )
-        self._test_differ(
-            "try:\n    pass\nexcept a:\n    pass",
-            "try:\n    pass\nexcept:\n    pass",
-            ((3, 0), (3, 0), "ast.ExceptHandler.type differ"),
-        )
-        self._test_same(
-            "try:\n    pass\nexcept a as x:\n    pass",
-            "try:\n    pass\nexcept a as x:\n    pass",
-        )
-        self._test_same(
-            "try:\n    pass\nexcept a as x:\n    pass",
-            "try:\n    pass\nexcept a, x:\n    pass",
-        )
-        self._test_differ(
-            "try:\n    pass\nexcept a as x:\n    pass",
-            "try:\n    pass\nexcept a:\n    pass",
-            ((3, 0), (3, 0), "ast.ExceptHandler.name differ"),
-        )
-        self._test_differ(
-            "try:\n    pass\nexcept a as x:\n    pass",
-            "try:\n    pass\nexcept a as y:\n    pass",
-            ((3, 12), (3, 12), "ast.Name.id differ x y"),
-        )
-        self._test_differ(
-            "try:\n    pass\nexcept:\n    pass\n    pass",
-            "try:\n    pass\nexcept:\n    pass",
-            ((3, 0), (3, 0), "length of ast.ExceptHandler.body differ"),
-        )
-        self._test_same(
-            "try:\n    pass\nexcept:\n    pass\nelse:\n    pass",
-            "try:\n    pass\nexcept:\n    pass\nelse:\n    pass",
-        )
-        self._test_differ(
-            "try:\n    pass\nexcept:\n    pass\nelse:\n    pass\n    pass",
-            "try:\n    pass\nexcept:\n    pass\nelse:\n    pass",
-            ((1, 0), (1, 0), "length of ast.TryExcept.orelse differ"),
-        )
-
-    @unittest.skipIf(
-        ast_diff.py3, "ast.TryFinally is removed (and ast.Try is added) in py3"
-    )
-    def test_tryfinally(self):
-        self._test_same(
-            "try:\n    pass\nfinally:\n    pass", "try:\n    pass\nfinally:\n    pass"
-        )
-        self._test_differ(
-            "try:\n    pass\n    pass\nfinally:\n    pass",
-            "try:\n    pass\nfinally:\n    pass",
-            ((1, 0), (1, 0), "length of ast.TryFinally.body differ"),
-        )
-        self._test_differ(
-            "try:\n    pass\nfinally:\n    pass\n    pass",
-            "try:\n    pass\nfinally:\n    pass",
-            ((1, 0), (1, 0), "length of ast.TryFinally.finalbody differ"),
-        )
-        self._test_differ(
-            "try:\n    pass\nexcept a:\n    pass\nexcept b:\n    pass\nfinally:\n    pass",
-            "try:\n    pass\nexcept a:\n    pass\nfinally:\n    pass",
-            ((1, 0), (1, 0), "length of ast.TryExcept.handlers differ"),
-        )
-
     def test_yield(self):
         self._test_same("def f():\n    yield", "def f():\n    yield")
         self._test_differ(
@@ -1330,7 +1153,6 @@ class TestAstDiff(unittest.TestCase):
             ((2, 4), (2, 4), "ast.Yield.value differ"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.YieldFrom is added in py3")
     def test_yieldfrom(self):
         self._test_same("def f():\n    yield from x", "def f():\n    yield from x")
         self._test_differ(
@@ -1339,11 +1161,9 @@ class TestAstDiff(unittest.TestCase):
             ((2, 15), (2, 15), "ast.Name.id differ x y"),
         )
 
-    @unittest.skipUnless(ast_diff.py3, "ast.Ellipsis is added in py3")
     def test_ellipsis(self):
         self._test_same("...", "...")
 
-    @unittest.skipUnless(ast_diff.py3, "ast.Await is added in py3")
     def test_await(self):
         self._test_same("await a", "await a")
         self._test_differ(
