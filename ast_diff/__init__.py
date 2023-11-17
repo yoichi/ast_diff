@@ -83,7 +83,7 @@ def _with_diff(node_name, node1, node2):
 def ast_diff(tree1, tree2):
     for node1, node2 in zip_longest(ast.walk(tree1), ast.walk(tree2)):
         try:
-            if type(node1) != type(node2):
+            if type(node1) is not type(node2):
                 raise DiffFound(
                     "different type %s %s"
                     % (type(node1).__name__, type(node2).__name__)
@@ -272,7 +272,7 @@ def ast_diff(tree1, tree2):
             elif isinstance(node1, ast.Subscript):
                 slice1 = node1.slice
                 slice2 = node2.slice
-                if type(slice1) != type(slice2):
+                if type(slice1) is not type(slice2):
                     raise DiffFound(
                         "type of ast.Subscript.slice differ %s %s"
                         % (type(slice1).__name__, type(slice2).__name__)
