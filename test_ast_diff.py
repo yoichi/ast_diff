@@ -1071,6 +1071,38 @@ class TestAstDiff(unittest.TestCase):
             ((1, 0), (1, 0), "length of ast.Try.finalbody differ"),
         )
 
+    @unittest.skipUnless(ast_diff.py311, "PEP 654 support is added in Python 3.11")
+    def test_trystar(self):
+        self._test_same(
+            "try:\n    pass\nexcept* a:\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass",
+        )
+        self._test_differ(
+            "try:\n    pass\nexcept* a:\n    pass",
+            "try:\n    pass\nexcept* b:\n    pass",
+            ((3, 8), (3, 8), "ast.Name.id differ a b"),
+        )
+        self._test_differ(
+            "try:\n    pass\n    pass\nexcept* a:\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryStar.body differ"),
+        )
+        self._test_differ(
+            "try:\n    pass\nexcept* a:\n    pass\nexcept* b:\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryStar.handlers differ"),
+        )
+        self._test_differ(
+            "try:\n    pass\nexcept* a:\n    pass\nelse:\n    pass\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass\nelse:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryStar.orelse differ"),
+        )
+        self._test_differ(
+            "try:\n    pass\nexcept* a:\n    pass\nfinally:\n    pass\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass\nfinally:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryStar.finalbody differ"),
+        )
+
     def test_yield(self):
         self._test_same("def f():\n    yield", "def f():\n    yield")
         self._test_differ(
