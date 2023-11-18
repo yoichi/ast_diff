@@ -52,12 +52,20 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ(
             "f'{3.14:10.10}'",
             "f'{3.14}'",
-            ((1, 0), (1, 0), "ast.FormattedValue.format_spec differ"),
+            (
+                (1, 2 if ast_diff.py312 else 0),
+                (1, 2 if ast_diff.py312 else 0),
+                "ast.FormattedValue.format_spec differ",
+            ),
         )
         self._test_differ(
             "f'{3.14!r:10.10}'",
             "f'{3.14!a:10.10}'",
-            ((1, 0), (1, 0), "ast.FormattedValue.conversion differ"),
+            (
+                (1, 2 if ast_diff.py312 else 0),
+                (1, 2 if ast_diff.py312 else 0),
+                "ast.FormattedValue.conversion differ",
+            ),
         )
         self._test_differ(
             "'{a}'", "f'{a}'", ((1, 0), (1, 0), "different type Constant JoinedStr")
@@ -84,7 +92,11 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ(
             "f'{a=}'",
             "f'{b=}'",
-            ((1, 0), (1, 0), "ast.Constant.value differ a= b="),
+            (
+                (1, 3 if ast_diff.py312 else 0),
+                (1, 3 if ast_diff.py312 else 0),
+                "ast.Constant.value differ a= b=",
+            ),
         )
 
     def test_bytes(self):

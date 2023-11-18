@@ -6,6 +6,7 @@ from itertools import zip_longest
 py39 = sys.version_info.minor >= 9
 py310 = sys.version_info.minor >= 10
 py311 = sys.version_info.minor >= 11
+py312 = sys.version_info.minor >= 12
 
 
 class DiffFound(Exception):
