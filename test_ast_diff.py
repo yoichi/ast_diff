@@ -52,12 +52,20 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ(
             "f'{3.14:10.10}'",
             "f'{3.14}'",
-            ((1, 0), (1, 0), "ast.FormattedValue.format_spec differ"),
+            (
+                (1, 2 if ast_diff.py312 else 0),
+                (1, 2 if ast_diff.py312 else 0),
+                "ast.FormattedValue.format_spec differ",
+            ),
         )
         self._test_differ(
             "f'{3.14!r:10.10}'",
             "f'{3.14!a:10.10}'",
-            ((1, 0), (1, 0), "ast.FormattedValue.conversion differ"),
+            (
+                (1, 2 if ast_diff.py312 else 0),
+                (1, 2 if ast_diff.py312 else 0),
+                "ast.FormattedValue.conversion differ",
+            ),
         )
         self._test_differ(
             "'{a}'", "f'{a}'", ((1, 0), (1, 0), "different type Constant JoinedStr")
@@ -84,7 +92,11 @@ class TestAstDiff(unittest.TestCase):
         self._test_differ(
             "f'{a=}'",
             "f'{b=}'",
-            ((1, 0), (1, 0), "ast.Constant.value differ a= b="),
+            (
+                (1, 3 if ast_diff.py312 else 0),
+                (1, 3 if ast_diff.py312 else 0),
+                "ast.Constant.value differ a= b=",
+            ),
         )
 
     def test_bytes(self):
@@ -1069,6 +1081,38 @@ class TestAstDiff(unittest.TestCase):
             "try:\n    pass\nfinally:\n    pass\n    pass",
             "try:\n    pass\nfinally:\n    pass",
             ((1, 0), (1, 0), "length of ast.Try.finalbody differ"),
+        )
+
+    @unittest.skipUnless(ast_diff.py311, "PEP 654 support is added in Python 3.11")
+    def test_trystar(self):
+        self._test_same(
+            "try:\n    pass\nexcept* a:\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass",
+        )
+        self._test_differ(
+            "try:\n    pass\nexcept* a:\n    pass",
+            "try:\n    pass\nexcept* b:\n    pass",
+            ((3, 8), (3, 8), "ast.Name.id differ a b"),
+        )
+        self._test_differ(
+            "try:\n    pass\n    pass\nexcept* a:\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryStar.body differ"),
+        )
+        self._test_differ(
+            "try:\n    pass\nexcept* a:\n    pass\nexcept* b:\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryStar.handlers differ"),
+        )
+        self._test_differ(
+            "try:\n    pass\nexcept* a:\n    pass\nelse:\n    pass\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass\nelse:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryStar.orelse differ"),
+        )
+        self._test_differ(
+            "try:\n    pass\nexcept* a:\n    pass\nfinally:\n    pass\n    pass",
+            "try:\n    pass\nexcept* a:\n    pass\nfinally:\n    pass",
+            ((1, 0), (1, 0), "length of ast.TryStar.finalbody differ"),
         )
 
     def test_yield(self):

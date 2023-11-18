@@ -5,6 +5,8 @@ from itertools import zip_longest
 
 py39 = sys.version_info.minor >= 9
 py310 = sys.version_info.minor >= 10
+py311 = sys.version_info.minor >= 11
+py312 = sys.version_info.minor >= 12
 
 
 class DiffFound(Exception):
@@ -76,6 +78,17 @@ def _with_diff(node_name, node1, node2):
             raise DiffFound("ast.%s.items[%d].optional_vars differ" % (node_name, i))
     if len(node1.body) != len(node2.body):
         raise DiffFound("length of ast.%s.body differ" % node_name)
+
+
+def _try_diff(node_name, node1, node2):
+    if len(node1.body) != len(node2.body):
+        raise DiffFound("length of ast.%s.body differ" % node_name)
+    if len(node1.handlers) != len(node2.handlers):
+        raise DiffFound("length of ast.%s.handlers differ" % node_name)
+    if len(node1.orelse) != len(node2.orelse):
+        raise DiffFound("length of ast.%s.orelse differ" % node_name)
+    if len(node1.finalbody) != len(node2.finalbody):
+        raise DiffFound("length of ast.%s.finalbody differ" % node_name)
 
 
 def ast_diff(tree1, tree2):
@@ -339,14 +352,9 @@ def ast_diff(tree1, tree2):
                 if len(node1.body) != len(node2.body):
                     raise DiffFound("length of ast.ClassDef.body differ")
             elif isinstance(node1, ast.Try):
-                if len(node1.body) != len(node2.body):
-                    raise DiffFound("length of ast.Try.body differ")
-                if len(node1.handlers) != len(node2.handlers):
-                    raise DiffFound("length of ast.Try.handlers differ")
-                if len(node1.orelse) != len(node2.orelse):
-                    raise DiffFound("length of ast.Try.orelse differ")
-                if len(node1.finalbody) != len(node2.finalbody):
-                    raise DiffFound("length of ast.Try.finalbody differ")
+                _try_diff("Try", node1, node2)
+            elif py311 and isinstance(node1, ast.TryStar):
+                _try_diff("TryStar", node1, node2)
             elif isinstance(node1, ast.ExceptHandler):
                 if (node1.type is None) != (node2.type is None):
                     raise DiffFound("ast.ExceptHandler.type differ")
