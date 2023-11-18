@@ -22,5 +22,5 @@ jobs:
       uses: py-actions/flake8@v2
     - name: Run test
       run: |
-        python setup.py test
+        python test_ast_diff.py
     - uses: psf/black@stable
